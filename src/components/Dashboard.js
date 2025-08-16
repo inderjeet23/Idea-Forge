@@ -4,7 +4,7 @@ import IdeaCard from './IdeaCard';
 import { Plus, User, Lightbulb, TrendingUp, Clock, LogOut } from 'lucide-react';
 
 const Dashboard = () => {
-  const { user, logout, validateIdeaWithTrends, saveIdea, isValidating, selectedIdea, setCurrentStep, startOnboardingFlow, generateIdeasFromCustomPrompt, isGenerating } = useAppContext();
+  const { user, logout, validateIdeaWithTrends, saveIdea, isValidating, selectedIdea, startOnboardingFlow, generateIdeasFromCustomPrompt, isGenerating } = useAppContext();
   const [savedIdeas, setSavedIdeas] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
