@@ -53,11 +53,11 @@ const OnboardingFlow = () => {
 
   const renderPassionsStep = () => (
     <div className="max-w-2xl mx-auto">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+      <div className="text-center mb-4">
+        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
           What are you passionate about?
         </h2>
-        <p className="text-lg text-gray-600">
+        <p className="text-base md:text-lg text-gray-600">
           Select the areas that excite you most. We'll use this to find ideas that align with your interests.
         </p>
       </div>
@@ -68,9 +68,9 @@ const OnboardingFlow = () => {
           <h3 className="text-xl font-semibold text-gray-900">Your Interests & Passions</h3>
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-2 sm:gap-3">
           {interestOptions.map(interest => (
-            <label key={interest} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+            <label key={interest} className="flex items-center space-x-2 p-2 sm:space-x-3 sm:p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
               <input
                 type="checkbox"
                 checked={profile.interests.includes(interest)}
@@ -83,7 +83,7 @@ const OnboardingFlow = () => {
                 }}
                 className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
               />
-              <span className="text-sm font-medium text-gray-700">{interest}</span>
+              <span className="text-xs sm:text-sm font-medium text-gray-700">{interest}</span>
             </label>
           ))}
         </div>
@@ -268,12 +268,12 @@ const OnboardingFlow = () => {
   };
 
   const renderNavigation = () => (
-    <div className="max-w-2xl mx-auto mt-8">
+    <div className="fixed bottom-4 left-4 right-4 z-50 max-w-2xl mx-auto">
       {currentOnboardingStep < 3 ? (
         <button
           onClick={nextStep}
           disabled={!isStepValid(currentOnboardingStep)}
-          className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-4 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg transition-all flex items-center justify-center text-lg"
+          className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-4 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg transition-all flex items-center justify-center text-lg shadow-lg border-2 border-white"
         >
           Continue
           <ChevronRight className="ml-2" size={20} />
@@ -282,7 +282,7 @@ const OnboardingFlow = () => {
         <button
           onClick={generatePersonalizedIdeas}
           disabled={!isStepValid(currentOnboardingStep) || isGenerating}
-          className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-4 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg transition-all flex items-center justify-center text-lg"
+          className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-4 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg transition-all flex items-center justify-center text-lg shadow-lg border-2 border-white"
         >
           {isGenerating ? (
             <>
@@ -307,7 +307,7 @@ const OnboardingFlow = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-gray-50 py-8 px-4 pb-24">
       <div className="max-w-4xl mx-auto">
         {apiError && (
           <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-8 max-w-2xl mx-auto">
