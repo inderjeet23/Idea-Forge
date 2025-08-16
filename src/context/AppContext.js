@@ -32,6 +32,8 @@ export const AppProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [chatHistory, setChatHistory] = useState([]);
 
 
   const skillOptions = [
@@ -516,6 +518,10 @@ export const AppProvider = ({ children }) => {
     setValidationData,
     apiError,
     setApiError,
+    sidebarOpen,
+    setSidebarOpen,
+    chatHistory,
+    setChatHistory,
     skillOptions,
     interestOptions,
     constraintOptions,

@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
-import { Code, Heart, Target, Star, Lightbulb, Loader, AlertCircle, ChevronRight, ArrowLeft, Home } from 'lucide-react';
+import { Code, Heart, Target, Star, Lightbulb, Loader, AlertCircle, ChevronRight, ArrowLeft, Home, Send, MessageSquare } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 
 const OnboardingFlow = () => {
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [customPrompt, setCustomPrompt] = useState('');
+  const [showCustomInput, setShowCustomInput] = useState(false);
   
   const {
     profile,
     handleProfileChange,
     generatePersonalizedIdeas,
+    generateIdeasFromCustomPrompt,
     isGenerating,
     apiError,
     skillOptions,
@@ -53,6 +56,21 @@ const OnboardingFlow = () => {
         return profile.values.length > 0;
       default:
         return false;
+    }
+  };
+
+  const handleCustomPromptSubmit = async () => {
+    if (customPrompt.trim()) {
+      await generateIdeasFromCustomPrompt(customPrompt);
+      setCustomPrompt('');
+      setShowCustomInput(false);
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleCustomPromptSubmit();
     }
   };
 
@@ -322,6 +340,67 @@ const OnboardingFlow = () => {
     }
   };
 
+  const renderCustomInputSection = () => (
+    <div className="max-w-2xl mx-auto mt-8 mb-4">
+      <div className="bg-white rounded-2xl p-4 border border-gray-200 shadow-sm">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center">
+            <MessageSquare className="mr-2 text-indigo-500" size={18} />
+            <h3 className="text-base font-semibold text-gray-900">Skip the questions?</h3>
+          </div>
+          <button
+            onClick={() => setShowCustomInput(!showCustomInput)}
+            className="text-sm text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
+          >
+            {showCustomInput ? 'Hide' : 'Tell us directly'}
+          </button>
+        </div>
+        
+        {showCustomInput && (
+          <div className="space-y-3">
+            <p className="text-sm text-gray-600">
+              Describe what kind of business ideas you're looking for, and we'll generate personalized recommendations.
+            </p>
+            <textarea
+              value={customPrompt}
+              onChange={(e) => setCustomPrompt(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="e.g., 'I want to build a SaaS tool for small businesses that helps with inventory management' or 'Ideas for sustainable products that solve everyday problems'"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none text-sm"
+              rows={3}
+              disabled={isGenerating}
+            />
+            <div className="flex space-x-2">
+              <button
+                onClick={handleCustomPromptSubmit}
+                disabled={!customPrompt.trim() || isGenerating}
+                className="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-indigo-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center text-sm"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader className="animate-spin mr-2" size={16} />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Send className="mr-2" size={16} />
+                    Generate Ideas
+                  </>
+                )}
+              </button>
+              <button
+                onClick={() => setShowCustomInput(false)}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors text-sm"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
   const renderNavigation = () => (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-4 shadow-lg">
       <div className="max-w-2xl mx-auto">
@@ -381,6 +460,7 @@ const OnboardingFlow = () => {
         <div className={`transition-opacity duration-300 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
           {renderCurrentStep()}
         </div>
+        {renderCustomInputSection()}
         {renderNavigation()}
       </div>
     </div>

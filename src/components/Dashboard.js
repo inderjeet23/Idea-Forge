@@ -88,7 +88,7 @@ const Dashboard = () => {
                 className="flex items-center text-sm text-blue-600 hover:text-blue-700 transition-colors px-3 py-2 rounded bg-blue-50 hover:bg-blue-100"
               >
                 <Home size={16} className="mr-1" />
-                Home
+                New Ideas
               </button>
               <div className="flex items-center space-x-2">
                 {user.picture ? (
