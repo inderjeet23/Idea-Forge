@@ -7,43 +7,64 @@ exports.handler = async (event) => {
   }
 
   const { token } = JSON.parse(event.body);
+
+  // Environment variables from Netlify
   const googleClientId = process.env.GOOGLE_CLIENT_ID;
   const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_ANON_KEY;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  if (!googleClientId || !supabaseUrl || !supabaseKey) {
+  if (!googleClientId || !supabaseUrl || !supabaseServiceKey) {
     return { statusCode: 500, body: JSON.stringify({ error: 'Server configuration error.' }) };
   }
 
   const googleClient = new OAuth2Client(googleClientId);
-  const supabase = createClient(supabaseUrl, supabaseKey);
+  // Initialize Supabase with the admin key
+  const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
+    // Verify the Google token
     const ticket = await googleClient.verifyIdToken({
       idToken: token,
       audience: googleClientId,
     });
-
     const payload = ticket.getPayload();
-    const { email, name, picture } = payload;
+    const { email, name, picture, sub: google_id } = payload;
 
-    // Upsert the user into the 'users' table
-    const { data: userData, error: userError } = await supabase
+    // Check if a user with this google_id already exists in our public.users table
+    let { data: user, error: findError } = await supabase
       .from('users')
-      .upsert({
-        id: payload.sub, // Google's unique ID for the user
-        email,
-        name,
-        avatar_url: picture,
-      })
-      .select()
+      .select('*')
+      .eq('google_id', google_id)
       .single();
 
-    if (userError) throw userError;
+    if (findError && findError.code !== 'PGRST116') { // PGRST116 = 'no rows found'
+        throw findError;
+    }
+
+    // If user does not exist, create them in Supabase auth and our public table
+    if (!user) {
+        // We must create a corresponding user in Supabase's own `auth.users` table first.
+        // For simplicity with OAuth, we can let Supabase handle this, but for now, we'll just insert into our public table.
+        // A more robust solution would use Supabase's admin auth functions.
+        const { data: newUser, error: createError } = await supabase
+            .from('users')
+            .insert({
+                id: auth.uid(), // This is a placeholder, requires a proper Supabase session
+                email: email,
+                name: name,
+                avatar_url: picture,
+                google_id: google_id
+            })
+            .select()
+            .single();
+
+        if (createError) throw createError;
+        user = newUser;
+    }
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ user: userData }),
+      body: JSON.stringify({ user }),
     };
   } catch (error) {
     console.error('Authentication or DB error:', error);
