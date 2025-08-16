@@ -46,8 +46,8 @@ export const AppProvider = ({ children }) => {
   ];
 
   const constraintOptions = [
-    'Solo Builder', 'Limited Budget (<$5k)', 'Part-time (10-20hrs/week)', 'Full-time (40+hrs/week)',
-    'No Technical Background', 'Quick to Market (<6 months)', 'Bootstrap Only', 'Open to Funding'
+    'Solo Builder', 'Limited Budget (<$5k)', 'No Technical Background', 
+    'Quick to Market (<6 months)', 'Bootstrap Only', 'Open to Funding'
   ];
 
   const valueOptions = [
