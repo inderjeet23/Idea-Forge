@@ -11,7 +11,7 @@ export const useAppContext = () => {
 };
 
 export const AppProvider = ({ children }) => {
-  const [currentStep, setCurrentStep] = useState('dashboard');
+  const [currentStep, setCurrentStep] = useState('profile');
   const [currentOnboardingStep, setCurrentOnboardingStep] = useState(1);
   const [profile, setProfile] = useState({
     skills: [],
