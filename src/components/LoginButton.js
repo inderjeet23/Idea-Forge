@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { GoogleLogin } from '@react-oauth/google';
+import { supabase } from '../supabaseClient';
 import { useAppContext } from '../context/AppContext';
 import { CheckCircle, XCircle, Loader } from 'lucide-react';
 
 const LoginButton = () => {
-  const { login } = useAppContext();
-  const [authState, setAuthState] = useState('idle'); // 'idle', 'loading', 'success', 'error'
+  const { setCurrentStep } = useAppContext();
+  const [authState, setAuthState] = useState('idle');
   const [errorMessage, setErrorMessage] = useState('');
 
   const handleSuccess = async (credentialResponse) => {
@@ -13,46 +14,33 @@ const LoginButton = () => {
     setErrorMessage('');
     
     try {
-      const response = await fetch('/.netlify/functions/auth-google', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: credentialResponse.credential }),
+      const { error } = await supabase.auth.signInWithIdToken({
+        provider: 'google',
+        token: credentialResponse.credential,
       });
 
-      if (!response.ok) {
-        throw new Error('Backend authentication failed.');
+      if (error) {
+        throw new Error(error.message || 'Supabase authentication failed.');
       }
 
-      const { user } = await response.json();
       setAuthState('success');
       
-      // Show success for a moment before transitioning
       setTimeout(() => {
-        login(user); // Update global state with user data
+        setCurrentStep('dashboard');
       }, 1000);
+
     } catch (error) {
       console.error('Authentication Error:', error);
       setAuthState('error');
       setErrorMessage('Authentication failed. Please try again.');
-      
-      // Reset after 3 seconds
-      setTimeout(() => {
-        setAuthState('idle');
-        setErrorMessage('');
-      }, 3000);
+      setTimeout(() => setAuthState('idle'), 3000);
     }
   };
 
   const handleError = () => {
-    console.log('Login Failed');
     setAuthState('error');
     setErrorMessage('Google login was cancelled or failed.');
-    
-    // Reset after 3 seconds
-    setTimeout(() => {
-      setAuthState('idle');
-      setErrorMessage('');
-    }, 3000);
+    setTimeout(() => setAuthState('idle'), 3000);
   };
 
   if (authState === 'loading') {

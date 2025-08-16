@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '../supabaseClient';
 
 const AppContext = createContext();
 
@@ -34,6 +35,18 @@ export const AppProvider = ({ children }) => {
   const [isSaving, setIsSaving] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [chatHistory, setChatHistory] = useState([]);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const currentUser = session?.user;
+      setUser(currentUser ?? null);
+      setIsAuthenticated(!!currentUser);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
 
   const skillOptions = [
@@ -418,48 +431,22 @@ export const AppProvider = ({ children }) => {
 
   const saveIdea = async (idea) => {
     if (!user) {
-      console.error('User not authenticated');
-      alert('Please sign in to save ideas');
-      return false;
+      alert('Please sign in to save ideas.');
+      return;
     }
-
-    // Check if idea is already saved locally
-    if (savedIdeas.find(saved => saved.id === idea.id)) {
-      return true;
-    }
-
+    if (savedIdeas.find(saved => saved.id === idea.id)) return;
+    setIsSaving(true);
     try {
-      setIsSaving(true);
-      // Save to Supabase via Netlify function
       const response = await fetch('/.netlify/functions/save-idea', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          idea, 
-          userId: user.id 
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idea, userId: user.id })
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to save idea to database');
-      }
-
-      const result = await response.json();
-      
-      // Update local state
-      setSavedIdeas([...savedIdeas, { ...idea, savedAt: new Date() }]);
-      
-      console.log('Idea saved successfully:', result.savedIdea);
-      return true;
+      if (!response.ok) throw new Error('Failed to save idea to the database');
+      setSavedIdeas(prev => [...prev, { ...idea, savedAt: new Date().toISOString() }]);
     } catch (error) {
       console.error('Error saving idea:', error);
       alert(`Failed to save idea: ${error.message}`);
-      // Still save locally as fallback
-      setSavedIdeas([...savedIdeas, { ...idea, savedAt: new Date() }]);
-      return false;
     } finally {
       setIsSaving(false);
     }
@@ -469,15 +456,9 @@ export const AppProvider = ({ children }) => {
     setProfile(prev => ({ ...prev, [field]: value }));
   };
 
-  const login = (userData) => {
-    setUser(userData);
-    setIsAuthenticated(true);
-    // Keep user on current page instead of auto-redirecting to dashboard
-  };
-
-  const logout = () => {
-    setUser(null);
-    setIsAuthenticated(false);
+  const logout = async () => {
+    await supabase.auth.signOut();
+    setCurrentStep('profile');
   };
 
   const startOnboardingFlow = () => {
@@ -533,7 +514,6 @@ export const AppProvider = ({ children }) => {
     handleProfileChange,
     user,
     isAuthenticated,
-    login,
     logout,
     startOnboardingFlow
   };
