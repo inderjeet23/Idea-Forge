@@ -4,7 +4,7 @@ import IdeaCard from './IdeaCard';
 import { Plus, User, Lightbulb, TrendingUp, Clock, LogOut } from 'lucide-react';
 
 const Dashboard = () => {
-  const { user, logout, validateIdeaWithTrends, saveIdea, isValidating, selectedIdea, setCurrentStep } = useAppContext();
+  const { user, logout, validateIdeaWithTrends, saveIdea, isValidating, selectedIdea, setCurrentStep, startOnboardingFlow, generateIdeasFromCustomPrompt, isGenerating } = useAppContext();
   const [savedIdeas, setSavedIdeas] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -35,14 +35,21 @@ const Dashboard = () => {
   const [showCustomPrompt, setShowCustomPrompt] = useState(false);
 
   const handleGenerateNewIdeas = () => {
-    setCurrentStep('profile');
+    startOnboardingFlow();
   };
 
-  const handleCustomPromptGeneration = () => {
+  const handleCustomPromptGeneration = async () => {
     if (customPrompt.trim()) {
-      // TODO: Implement custom prompt generation logic
-      console.log('Generating ideas with custom prompt:', customPrompt);
-      setCurrentStep('ideas');
+      await generateIdeasFromCustomPrompt(customPrompt);
+      setCustomPrompt('');
+      setShowCustomPrompt(false);
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleCustomPromptGeneration();
     }
   };
 
@@ -188,17 +195,26 @@ const Dashboard = () => {
                 <textarea
                   value={customPrompt}
                   onChange={(e) => setCustomPrompt(e.target.value)}
+                  onKeyPress={handleKeyPress}
                   placeholder="e.g., 'I want to build a SaaS tool for small businesses that helps with inventory management' or 'Ideas for sustainable products that solve everyday problems'"
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
                   rows={3}
+                  disabled={isGenerating}
                 />
                 <div className="mt-3 flex space-x-2">
                   <button
                     onClick={handleCustomPromptGeneration}
-                    disabled={!customPrompt.trim()}
-                    className="bg-purple-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-purple-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    disabled={!customPrompt.trim() || isGenerating}
+                    className="bg-purple-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-purple-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center"
                   >
-                    Generate Ideas
+                    {isGenerating ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Generating...
+                      </>
+                    ) : (
+                      'Generate Ideas'
+                    )}
                   </button>
                   <button
                     onClick={() => setShowCustomPrompt(false)}
@@ -258,17 +274,26 @@ const Dashboard = () => {
                   <textarea
                     value={customPrompt}
                     onChange={(e) => setCustomPrompt(e.target.value)}
+                    onKeyPress={handleKeyPress}
                     placeholder="e.g., 'I want to build a SaaS tool for small businesses that helps with inventory management' or 'Ideas for sustainable products that solve everyday problems'"
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
                     rows={3}
+                    disabled={isGenerating}
                   />
                   <div className="mt-3 flex space-x-2">
                     <button
                       onClick={handleCustomPromptGeneration}
-                      disabled={!customPrompt.trim()}
-                      className="bg-purple-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-purple-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                      disabled={!customPrompt.trim() || isGenerating}
+                      className="bg-purple-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-purple-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center"
                     >
-                      Generate Ideas
+                      {isGenerating ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Generating...
+                        </>
+                      ) : (
+                        'Generate Ideas'
+                      )}
                     </button>
                     <button
                       onClick={() => setShowCustomPrompt(false)}

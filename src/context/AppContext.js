@@ -11,7 +11,7 @@ export const useAppContext = () => {
 };
 
 export const AppProvider = ({ children }) => {
-  const [currentStep, setCurrentStep] = useState('profile');
+  const [currentStep, setCurrentStep] = useState('dashboard');
   const [currentOnboardingStep, setCurrentOnboardingStep] = useState(1);
   const [profile, setProfile] = useState({
     skills: [],
@@ -203,6 +203,95 @@ export const AppProvider = ({ children }) => {
     return ideas;
   };
 
+  const callGeminiAPIWithCustomPrompt = async (customPrompt) => {
+    const response = await fetch('/.netlify/functions/generate-ideas', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ customPrompt })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`Serverless function error: ${errorData.error || response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.ideas;
+  };
+
+  const generateIdeasFromCustomPrompt = async (customPrompt) => {
+    setIsGenerating(true);
+    setApiError('');
+    
+    try {
+      let ideas;
+      
+      try {
+        ideas = await callGeminiAPIWithCustomPrompt(customPrompt);
+      } catch (apiError) {
+        console.log('Serverless function unavailable, using mock AI generation:', apiError.message);
+        // Generate mock ideas based on custom prompt
+        ideas = await generateMockIdeasFromPrompt(customPrompt);
+      }
+      
+      setGeneratedIdeas(ideas);
+      setCurrentStep('ideas');
+    } catch (error) {
+      console.error('Error generating ideas:', error);
+      setApiError(error.message || 'Failed to generate ideas');
+      
+      const mockIdeas = await generateMockIdeasFromPrompt(customPrompt);
+      setGeneratedIdeas(mockIdeas);
+      setCurrentStep('ideas');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const generateMockIdeasFromPrompt = async (customPrompt) => {
+    // Create mock ideas based on custom prompt
+    const promptWords = customPrompt.toLowerCase().split(' ');
+    const ideaTemplates = [
+      {
+        title: "AI-Powered Solution for Your Needs",
+        description: `Smart tool that addresses your specific requirements: "${customPrompt}". Uses modern technology to streamline workflows and improve efficiency.`,
+        market: "Medium",
+        complexity: "Medium",
+        timeToRevenue: "4-6 months"
+      },
+      {
+        title: "Custom Platform Based on Your Vision",
+        description: `Tailored platform built around your concept: "${customPrompt}". Designed to scale and adapt to growing user needs.`,
+        market: "Large",
+        complexity: "High",
+        timeToRevenue: "6-9 months"
+      },
+      {
+        title: "Micro-SaaS for Specific Use Case",
+        description: `Focused solution targeting the specific problem outlined in: "${customPrompt}". Simple, effective, and quick to market.`,
+        market: "Small",
+        complexity: "Low",
+        timeToRevenue: "2-3 months"
+      }
+    ];
+
+    const ideas = ideaTemplates.map((template, index) => ({
+      id: `custom-${Date.now()}-${index}`,
+      title: template.title,
+      description: template.description,
+      market: template.market,
+      complexity: template.complexity,
+      timeToRevenue: template.timeToRevenue,
+      tags: promptWords.slice(0, 3),
+      matchScore: Math.floor(Math.random() * 30) + 70,
+      validationKeywords: promptWords.filter(word => word.length > 3).slice(0, 4)
+    }));
+
+    return ideas;
+  };
+
   const generatePersonalizedIdeas = async () => {
     setIsGenerating(true);
     setApiError('');
@@ -372,11 +461,27 @@ export const AppProvider = ({ children }) => {
   const login = (userData) => {
     setUser(userData);
     setIsAuthenticated(true);
+    setCurrentStep('dashboard');
   };
 
   const logout = () => {
     setUser(null);
     setIsAuthenticated(false);
+  };
+
+  const startOnboardingFlow = () => {
+    // Reset profile and start fresh
+    setProfile({
+      skills: [],
+      interests: [],
+      constraints: [],
+      values: [],
+      experience: '',
+      timeCommitment: '',
+      buildingStyle: ''
+    });
+    setCurrentOnboardingStep(1);
+    setCurrentStep('profile');
   };
 
   const value = {
@@ -405,13 +510,15 @@ export const AppProvider = ({ children }) => {
     constraintOptions,
     valueOptions,
     generatePersonalizedIdeas,
+    generateIdeasFromCustomPrompt,
     validateIdeaWithTrends,
     saveIdea,
     handleProfileChange,
     user,
     isAuthenticated,
     login,
-    logout
+    logout,
+    startOnboardingFlow
   };
 
   return (

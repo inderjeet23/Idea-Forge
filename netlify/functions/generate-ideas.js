@@ -16,16 +16,16 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const { userProfile } = JSON.parse(event.body);
+    const { userProfile, customPrompt } = JSON.parse(event.body);
     
-    if (!userProfile) {
+    if (!userProfile && !customPrompt) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ error: 'User profile is required' })
+        body: JSON.stringify({ error: 'User profile or custom prompt is required' })
       };
     }
 
-    const prompt = constructGeminiPrompt(userProfile);
+    const prompt = customPrompt ? constructCustomPrompt(customPrompt) : constructGeminiPrompt(userProfile);
     
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${geminiApiKey}`, {
       method: 'POST',
@@ -108,6 +108,46 @@ exports.handler = async (event, context) => {
       body: JSON.stringify({ error: error.message || 'Failed to generate ideas' })
     };
   }
+};
+
+const constructCustomPrompt = (customPrompt) => {
+  return `You are an expert SaaS idea generator and startup advisor. Based on this user's specific request, generate 3 highly relevant SaaS business ideas:
+
+USER REQUEST: "${customPrompt}"
+
+For each idea, provide:
+1. A compelling title that directly addresses their request
+2. A 2-sentence description focusing on the specific problem and solution
+3. Target market size (Small/Medium/Large)
+4. Technical complexity (Low/Medium/High)
+5. Time to first revenue (in months)
+6. Why this matches their request specifically
+7. 3-5 relevant tags
+8. A unique differentiator that sets it apart from existing solutions
+
+Focus on:
+- Micro-SaaS opportunities ($5K-$50K ARR potential)
+- Problems that are clearly defined in their request
+- Ideas that can be validated quickly
+- Solutions that don't require huge teams or funding
+- Opportunities that are practical and achievable
+
+Return ONLY valid JSON in this exact format:
+{
+  "ideas": [
+    {
+      "title": "string",
+      "description": "string",
+      "market": "Small|Medium|Large",
+      "complexity": "Low|Medium|High",
+      "timeToRevenue": "string",
+      "matchReasoning": "string",
+      "tags": ["string"],
+      "differentiator": "string",
+      "validationKeywords": ["string"]
+    }
+  ]
+}`;
 };
 
 const constructGeminiPrompt = (userProfile) => {

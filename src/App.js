@@ -9,10 +9,8 @@ import Dashboard from './components/Dashboard';
 const IdeaForgeContent = () => {
   const { currentStep, isAuthenticated } = useAppContext();
 
-
-
-  // If user is authenticated and on profile step, show dashboard instead
-  if (isAuthenticated && currentStep === 'profile') {
+  // Show dashboard for authenticated users when on dashboard step
+  if (isAuthenticated && currentStep === 'dashboard') {
     return <Dashboard />;
   }
 
