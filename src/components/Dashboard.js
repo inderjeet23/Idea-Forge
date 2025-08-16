@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import IdeaCard from './IdeaCard';
-import { Plus, User, Lightbulb, TrendingUp, Clock, LogOut } from 'lucide-react';
+import { Plus, User, Lightbulb, TrendingUp, Clock, LogOut, Home } from 'lucide-react';
 
 const Dashboard = () => {
-  const { user, logout, validateIdeaWithTrends, saveIdea, isValidating, selectedIdea, startOnboardingFlow, generateIdeasFromCustomPrompt, isGenerating } = useAppContext();
-  const [savedIdeas, setSavedIdeas] = useState([]);
+  const { user, logout, validateIdeaWithTrends, saveIdea, isValidating, selectedIdea, startOnboardingFlow, generateIdeasFromCustomPrompt, isGenerating, setCurrentStep, savedIdeas, setSavedIdeas } = useAppContext();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -34,7 +33,7 @@ const Dashboard = () => {
     };
 
     fetchIdeas();
-  }, [user]);
+  }, [user, setSavedIdeas]);
 
   const [customPrompt, setCustomPrompt] = useState('');
   const [showCustomPrompt, setShowCustomPrompt] = useState(false);
@@ -84,6 +83,13 @@ const Dashboard = () => {
             </div>
             
             <div className="flex items-center space-x-4">
+              <button
+                onClick={() => setCurrentStep('profile')}
+                className="flex items-center text-sm text-blue-600 hover:text-blue-700 transition-colors px-3 py-2 rounded bg-blue-50 hover:bg-blue-100"
+              >
+                <Home size={16} className="mr-1" />
+                Home
+              </button>
               <div className="flex items-center space-x-2">
                 {user.picture ? (
                   <img 

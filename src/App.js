@@ -5,6 +5,7 @@ import ProfileStep from './components/ProfileStep';
 import IdeasStep from './components/IdeasStep';
 import ValidationStep from './components/ValidationStep';
 import Dashboard from './components/Dashboard';
+import Header from './components/Header';
 
 const IdeaForgeContent = () => {
   const { currentStep, isAuthenticated } = useAppContext();
@@ -15,10 +16,24 @@ const IdeaForgeContent = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
       {currentStep === 'profile' && <ProfileStep />}
-      {currentStep === 'ideas' && <IdeasStep />}
-      {currentStep === 'validation' && <ValidationStep />}
+      {currentStep === 'ideas' && (
+        <div className="bg-gray-50">
+          <Header />
+          <div className="py-8 px-4">
+            <IdeasStep />
+          </div>
+        </div>
+      )}
+      {currentStep === 'validation' && (
+        <div className="bg-gray-50">
+          <Header />
+          <div className="py-8 px-4">
+            <ValidationStep />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

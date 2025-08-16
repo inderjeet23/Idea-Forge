@@ -461,7 +461,7 @@ export const AppProvider = ({ children }) => {
   const login = (userData) => {
     setUser(userData);
     setIsAuthenticated(true);
-    setCurrentStep('dashboard');
+    // Keep user on current page instead of auto-redirecting to dashboard
   };
 
   const logout = () => {

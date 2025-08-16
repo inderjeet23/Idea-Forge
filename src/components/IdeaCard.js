@@ -1,7 +1,10 @@
 import React from 'react';
-import { Star, Search, Loader } from 'lucide-react';
+import { Star, Search, Loader, Check } from 'lucide-react';
+import { useAppContext } from '../context/AppContext';
 
 const IdeaCard = ({ idea, validateIdeaWithTrends, saveIdea, isValidating, selectedIdea }) => {
+  const { savedIdeas } = useAppContext();
+  const isAlreadySaved = savedIdeas.find(saved => saved.id === idea.id);
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all">
       <div className="p-6">
@@ -23,9 +26,14 @@ const IdeaCard = ({ idea, validateIdeaWithTrends, saveIdea, isValidating, select
           </div>
           <button
             onClick={() => saveIdea(idea)}
-            className="text-gray-400 hover:text-yellow-500 transition-colors"
+            disabled={isAlreadySaved}
+            className={`transition-colors ${
+              isAlreadySaved 
+                ? 'text-green-500 cursor-not-allowed' 
+                : 'text-gray-400 hover:text-yellow-500'
+            }`}
           >
-            <Star size={18} />
+            {isAlreadySaved ? <Check size={18} /> : <Star size={18} />}
           </button>
         </div>
         

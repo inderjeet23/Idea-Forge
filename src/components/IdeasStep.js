@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Lightbulb, Target, TrendingUp, Crown, Search, Loader, Star, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Lightbulb, Target, TrendingUp, Crown, Search, Loader, Star, ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import IdeaCard from './IdeaCard';
 
@@ -11,7 +11,8 @@ const IdeasStep = () => {
     isValidating,
     selectedIdea,
     setCurrentStep,
-    geminiApiKey
+    geminiApiKey,
+    savedIdeas
   } = useAppContext();
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -57,7 +58,10 @@ const IdeasStep = () => {
   const topMatch = generatedIdeas.length > 0 ? generatedIdeas[0] : null;
   const otherIdeas = generatedIdeas.slice(1);
 
-  const CarouselIdeaCard = ({ idea, index, isActive }) => (
+  const CarouselIdeaCard = ({ idea, index, isActive }) => {
+    const isAlreadySaved = savedIdeas.find(saved => saved.id === idea.id);
+    
+    return (
     <div className={`${isActive ? 'block' : 'hidden'} w-full`}>
       <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-2xl border-2 border-purple-200 shadow-lg p-4 sm:p-6 lg:p-8 relative min-h-[500px] sm:min-h-[400px]">
         <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
@@ -149,16 +153,22 @@ const IdeasStep = () => {
             </button>
             <button
               onClick={() => saveIdea(idea)}
-              className="bg-white text-purple-600 px-4 sm:px-6 py-3 rounded-lg font-semibold hover:bg-purple-50 transition-colors border-2 border-purple-200 flex items-center justify-center text-sm sm:text-base"
+              disabled={isAlreadySaved}
+              className={`px-4 sm:px-6 py-3 rounded-lg font-semibold transition-colors border-2 flex items-center justify-center text-sm sm:text-base ${
+                isAlreadySaved 
+                  ? 'bg-green-50 text-green-600 border-green-200 cursor-not-allowed'
+                  : 'bg-white text-purple-600 hover:bg-purple-50 border-purple-200'
+              }`}
             >
-              <Star className="mr-2" size={16} />
-              Save Idea
+              {isAlreadySaved ? <Check className="mr-2" size={16} /> : <Star className="mr-2" size={16} />}
+              {isAlreadySaved ? 'Saved!' : 'Save Idea'}
             </button>
           </div>
         </div>
       </div>
     </div>
-  );
+    );
+  };
 
   return (
     <div className="max-w-6xl mx-auto px-2 sm:px-4">
