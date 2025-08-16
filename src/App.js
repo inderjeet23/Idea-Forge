@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { ChevronRight, Lightbulb, Target, TrendingUp, Users, Code, Heart, Star, ExternalLink, CheckCircle, Loader, AlertCircle, BarChart3, Search, Calendar, Github, Globe } from 'lucide-react';
+import React, { useState } from 'react';
+import { Lightbulb, Target, TrendingUp, Users, Code, Heart, Star, CheckCircle, Loader, AlertCircle, Search, Github, Globe } from 'lucide-react';
 
 const IdeaForge = () => {
   const [currentStep, setCurrentStep] = useState('profile');
@@ -262,9 +262,10 @@ Return ONLY valid JSON in this exact format:
     ];
 
     const ideas = [];
-    const { skills, interests, constraints, values } = userProfile;
+    const { skills, interests, values } = userProfile;
     
     // Generate more sophisticated ideas
+    const { skills, interests, values } = userProfile;
     for (let i = 0; i < Math.min(6, interests.length * 2); i++) {
       const interest = interests[i % interests.length];
       const skill = skills[i % skills.length] || skills[0];
