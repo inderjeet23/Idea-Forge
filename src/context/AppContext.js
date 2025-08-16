@@ -324,8 +324,43 @@ export const AppProvider = ({ children }) => {
     }
   };
 
-  const saveIdea = (idea) => {
-    if (!savedIdeas.find(saved => saved.id === idea.id)) {
+  const saveIdea = async (idea) => {
+    if (!user) {
+      console.error('User not authenticated');
+      return;
+    }
+
+    // Check if idea is already saved locally
+    if (savedIdeas.find(saved => saved.id === idea.id)) {
+      return;
+    }
+
+    try {
+      // Save to Supabase via Netlify function
+      const response = await fetch('/.netlify/functions/save-idea', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          idea, 
+          userId: user.id 
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save idea to database');
+      }
+
+      const result = await response.json();
+      
+      // Update local state
+      setSavedIdeas([...savedIdeas, { ...idea, savedAt: new Date() }]);
+      
+      console.log('Idea saved successfully:', result.savedIdea);
+    } catch (error) {
+      console.error('Error saving idea:', error);
+      // Fallback to local storage only
       setSavedIdeas([...savedIdeas, { ...idea, savedAt: new Date() }]);
     }
   };

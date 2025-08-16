@@ -1,4 +1,5 @@
 const { OAuth2Client } = require('google-auth-library');
+const { createClient } = require('@supabase/supabase-js');
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
@@ -7,32 +8,45 @@ exports.handler = async (event) => {
 
   const { token } = JSON.parse(event.body);
   const googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_ANON_KEY;
 
-  if (!googleClientId) {
-    return { statusCode: 500, body: JSON.stringify({ error: 'Google Client ID not configured.' }) };
+  if (!googleClientId || !supabaseUrl || !supabaseKey) {
+    return { statusCode: 500, body: JSON.stringify({ error: 'Server configuration error.' }) };
   }
 
-  const client = new OAuth2Client(googleClientId);
+  const googleClient = new OAuth2Client(googleClientId);
+  const supabase = createClient(supabaseUrl, supabaseKey);
 
   try {
-    const ticket = await client.verifyIdToken({
+    const ticket = await googleClient.verifyIdToken({
       idToken: token,
       audience: googleClientId,
     });
 
     const payload = ticket.getPayload();
-    // This is where you would find or create a user in your database.
-    const user = {
-      email: payload.email,
-      name: payload.name,
-      picture: payload.picture,
-    };
+    const { email, name, picture } = payload;
+
+    // Upsert the user into the 'users' table
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .upsert({
+        id: payload.sub, // Google's unique ID for the user
+        email,
+        name,
+        avatar_url: picture,
+      })
+      .select()
+      .single();
+
+    if (userError) throw userError;
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ user }),
+      body: JSON.stringify({ user: userData }),
     };
   } catch (error) {
-    return { statusCode: 401, body: JSON.stringify({ error: 'Invalid token.' }) };
+    console.error('Authentication or DB error:', error);
+    return { statusCode: 401, body: JSON.stringify({ error: 'Invalid token or database error.' }) };
   }
 };
