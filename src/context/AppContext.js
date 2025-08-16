@@ -29,7 +29,6 @@ export const AppProvider = ({ children }) => {
   const [validationData, setValidationData] = useState(null);
   const [apiError, setApiError] = useState('');
 
-  const geminiApiKey = process.env.REACT_APP_GEMINI_API_KEY;
 
   const skillOptions = [
     'Frontend Development', 'Backend Development', 'Full-Stack Development', 'UI/UX Design', 
@@ -78,114 +77,23 @@ export const AppProvider = ({ children }) => {
   };
 
   const callGeminiAPI = async (userProfile) => {
-    const prompt = constructGeminiPrompt(userProfile);
-    
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${geminiApiKey}`, {
+    const response = await fetch('/.netlify/functions/generate-ideas', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: prompt
-          }]
-        }],
-        generationConfig: {
-          temperature: 0.9,
-          topK: 1,
-          topP: 1,
-          maxOutputTokens: 2048,
-        }
-      })
+      body: JSON.stringify({ userProfile })
     });
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(`Gemini API Error: ${errorData.error?.message || response.statusText}`);
+      throw new Error(`Serverless function error: ${errorData.error || response.statusText}`);
     }
 
     const data = await response.json();
-    const generatedText = data.candidates[0]?.content?.parts[0]?.text;
-    
-    if (!generatedText) {
-      throw new Error('No content generated from Gemini API');
-    }
-
-    try {
-      const jsonMatch = generatedText.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
-        throw new Error('No valid JSON found in AI response');
-      }
-      
-      const parsedResponse = JSON.parse(jsonMatch[0]);
-      
-      return parsedResponse.ideas.map((idea, index) => ({
-        id: `ai-${Date.now()}-${index}`,
-        title: idea.title,
-        description: idea.description,
-        market: idea.market,
-        complexity: idea.complexity,
-        timeToRevenue: idea.timeToRevenue || idea.timeToMarket,
-        matchScore: 95,
-        tags: idea.tags || [],
-        matchReasoning: idea.matchReasoning || `AI-generated based on your unique profile combination`,
-        differentiator: idea.differentiator,
-        validationKeywords: idea.validationKeywords || generateValidationKeywords(idea.title, idea.tags),
-        generatedBy: 'Gemini AI',
-        confidence: 95
-      }));
-    } catch (parseError) {
-      console.error('Failed to parse AI response:', parseError);
-      throw new Error('Failed to parse AI response. Using fallback generation.');
-    }
+    return data.ideas;
   };
 
-  const constructGeminiPrompt = (userProfile) => {
-    return `You are an expert SaaS idea generator and startup advisor. Generate 6 highly personalized SaaS business ideas for this user profile:
-
-SKILLS: ${userProfile.skills.join(', ')}
-INTERESTS: ${userProfile.interests.join(', ')}
-CONSTRAINTS: ${userProfile.constraints.join(', ')}
-VALUES: ${userProfile.values.join(', ')}
-EXPERIENCE: ${userProfile.experience}
-TIME COMMITMENT: ${userProfile.timeCommitment}
-BUILDING STYLE: ${userProfile.buildingStyle}
-
-For each idea, provide:
-1. A compelling title that combines their skills/interests uniquely
-2. A 2-sentence description focusing on the specific problem and solution
-3. Target market size (Small/Medium/Large)
-4. Technical complexity (Low/Medium/High)
-5. Time to first revenue (in months)
-6. Why this matches their profile specifically
-7. 3-5 relevant tags
-8. A unique differentiator that leverages their specific combination
-
-Focus on:
-- Micro-SaaS opportunities ($5K-$50K ARR potential)
-- Problems they've likely experienced personally
-- Ideas that can be validated quickly
-- Solutions that don't require huge teams or funding
-- Opportunities in growing but not oversaturated markets
-
-Return ONLY valid JSON in this exact format:
-{
-  "ideas": [
-    {
-      "title": "string",
-      "description": "string",
-      "market": "Small|Medium|Large",
-      "complexity": "Low|Medium|High",
-      "timeToRevenue": "string",
-      "matchReasoning": "string",
-      "tags": ["string"],
-      "differentiator": "string",
-      "validationKeywords": ["string"]
-    }
-  ]
-}`;
-  };
 
   const generateEnhancedMockIdeas = async (userProfile) => {
     const ideaTemplates = [
@@ -299,10 +207,10 @@ Return ONLY valid JSON in this exact format:
     try {
       let ideas;
       
-      if (geminiApiKey && geminiApiKey !== 'your_gemini_api_key_here') {
+      try {
         ideas = await callGeminiAPI(profile);
-      } else {
-        console.log('Using mock AI generation (add REACT_APP_GEMINI_API_KEY for real AI)');
+      } catch (apiError) {
+        console.log('Serverless function unavailable, using mock AI generation:', apiError.message);
         ideas = await generateEnhancedMockIdeas(profile);
       }
       
@@ -442,7 +350,6 @@ Return ONLY valid JSON in this exact format:
     setValidationData,
     apiError,
     setApiError,
-    geminiApiKey,
     skillOptions,
     interestOptions,
     constraintOptions,
