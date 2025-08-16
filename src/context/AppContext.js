@@ -29,6 +29,8 @@ export const AppProvider = ({ children }) => {
   const [isValidating, setIsValidating] = useState(false);
   const [validationData, setValidationData] = useState(null);
   const [apiError, setApiError] = useState('');
+  const [user, setUser] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
 
   const skillOptions = [
@@ -332,6 +334,16 @@ export const AppProvider = ({ children }) => {
     setProfile(prev => ({ ...prev, [field]: value }));
   };
 
+  const login = (userData) => {
+    setUser(userData);
+    setIsAuthenticated(true);
+  };
+
+  const logout = () => {
+    setUser(null);
+    setIsAuthenticated(false);
+  };
+
   const value = {
     currentStep,
     setCurrentStep,
@@ -360,7 +372,11 @@ export const AppProvider = ({ children }) => {
     generatePersonalizedIdeas,
     validateIdeaWithTrends,
     saveIdea,
-    handleProfileChange
+    handleProfileChange,
+    user,
+    isAuthenticated,
+    login,
+    logout
   };
 
   return (

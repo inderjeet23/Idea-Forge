@@ -1,4 +1,5 @@
 import React from 'react';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AppProvider, useAppContext } from './context/AppContext';
 import ProfileStep from './components/ProfileStep';
 import IdeasStep from './components/IdeasStep';
@@ -20,9 +21,11 @@ const IdeaForgeContent = () => {
 
 const IdeaForge = () => {
   return (
-    <AppProvider>
-      <IdeaForgeContent />
-    </AppProvider>
+    <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>
+      <AppProvider>
+        <IdeaForgeContent />
+      </AppProvider>
+    </GoogleOAuthProvider>
   );
 };
 

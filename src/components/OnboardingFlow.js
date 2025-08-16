@@ -1,8 +1,10 @@
-import React from 'react';
-import { Code, Heart, Target, Star, Lightbulb, Loader, AlertCircle, ChevronRight } from 'lucide-react';
+import React, { useState } from 'react';
+import { Code, Heart, Target, Star, Lightbulb, Loader, AlertCircle, ChevronRight, ArrowLeft } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 
 const OnboardingFlow = () => {
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  
   const {
     profile,
     handleProfileChange,
@@ -19,7 +21,21 @@ const OnboardingFlow = () => {
 
   const nextStep = () => {
     if (currentOnboardingStep < 3) {
-      setCurrentOnboardingStep(currentOnboardingStep + 1);
+      setIsTransitioning(true);
+      setTimeout(() => {
+        setCurrentOnboardingStep(currentOnboardingStep + 1);
+        setIsTransitioning(false);
+      }, 150);
+    }
+  };
+
+  const prevStep = () => {
+    if (currentOnboardingStep > 1) {
+      setIsTransitioning(true);
+      setTimeout(() => {
+        setCurrentOnboardingStep(currentOnboardingStep - 1);
+        setIsTransitioning(false);
+      }, 150);
     }
   };
 
@@ -39,12 +55,22 @@ const OnboardingFlow = () => {
   const renderProgressIndicator = () => (
     <div className="w-full max-w-md mx-auto mb-8">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-medium text-gray-500">Step {currentOnboardingStep} of 3</span>
+        <div className="flex items-center">
+          <button
+            onClick={prevStep}
+            disabled={currentOnboardingStep === 1}
+            className="mr-4 p-2 text-gray-500 hover:text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            aria-label="Go back"
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <span className="text-sm font-medium text-gray-500">Step {currentOnboardingStep} of 3</span>
+        </div>
         <span className="text-sm text-gray-400">{Math.round((currentOnboardingStep / 3) * 100)}%</span>
       </div>
       <div className="w-full bg-gray-200 rounded-full h-2">
         <div 
-          className="bg-gradient-to-r from-purple-600 to-blue-600 h-2 rounded-full transition-all duration-300"
+          className="bg-gradient-to-r from-purple-600 to-blue-600 h-2 rounded-full transition-all duration-500"
           style={{ width: `${(currentOnboardingStep / 3) * 100}%` }}
         ></div>
       </div>
@@ -58,7 +84,7 @@ const OnboardingFlow = () => {
           What are you passionate about?
         </h2>
         <p className="text-base md:text-lg text-gray-600">
-          Select the areas that excite you most. We'll use this to find ideas that align with your interests.
+          Select the areas that excite you most. We'll discover ideas that perfectly align with your passions.
         </p>
       </div>
       
@@ -81,7 +107,7 @@ const OnboardingFlow = () => {
                     handleProfileChange('interests', profile.interests.filter(i => i !== interest));
                   }
                 }}
-                className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500 transition-transform hover:scale-110 checked:animate-pulse"
               />
               <span className="text-xs sm:text-sm font-medium text-gray-700">{interest}</span>
             </label>
@@ -95,10 +121,10 @@ const OnboardingFlow = () => {
     <div className="max-w-2xl mx-auto">
       <div className="text-center mb-8">
         <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-          What's your expertise?
+          Let's look at your strengths
         </h2>
         <p className="text-lg text-gray-600">
-          Tell us about your skills and experience level to match you with the right opportunities.
+          Share your expertise so we can match you with opportunities where you'll thrive.
         </p>
       </div>
       
@@ -122,7 +148,7 @@ const OnboardingFlow = () => {
                       handleProfileChange('skills', profile.skills.filter(s => s !== skill));
                     }
                   }}
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 transition-transform hover:scale-110 checked:animate-pulse"
                 />
                 <span className="text-sm font-medium text-gray-700">{skill}</span>
               </label>
@@ -157,7 +183,7 @@ const OnboardingFlow = () => {
           How do you like to build?
         </h2>
         <p className="text-lg text-gray-600">
-          Understanding your constraints and values helps us suggest ideas that fit your lifestyle.
+          Understanding your preferences helps us suggest ideas that perfectly fit your lifestyle.
         </p>
       </div>
       
@@ -182,7 +208,7 @@ const OnboardingFlow = () => {
                         handleProfileChange('constraints', profile.constraints.filter(c => c !== constraint));
                       }
                     }}
-                    className="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
+                    className="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500 transition-transform hover:scale-110 checked:animate-pulse"
                   />
                   <span className="text-sm font-medium text-gray-700">{constraint}</span>
                 </label>
@@ -243,7 +269,7 @@ const OnboardingFlow = () => {
                       handleProfileChange('values', profile.values.filter(v => v !== value));
                     }
                   }}
-                  className="w-4 h-4 text-yellow-600 border-gray-300 rounded focus:ring-yellow-500"
+                  className="w-4 h-4 text-yellow-600 border-gray-300 rounded focus:ring-yellow-500 transition-transform hover:scale-110 checked:animate-pulse"
                 />
                 <span className="text-sm font-medium text-gray-700">{value}</span>
               </label>
@@ -321,7 +347,9 @@ const OnboardingFlow = () => {
         )}
 
         {renderProgressIndicator()}
-        {renderCurrentStep()}
+        <div className={`transition-opacity duration-300 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
+          {renderCurrentStep()}
+        </div>
         {renderNavigation()}
       </div>
     </div>
