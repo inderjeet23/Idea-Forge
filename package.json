@@ -31,5 +31,10 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "overrides": {
+    "sourcemap-codec": "@jridgewell/sourcemap-codec",
+    "glob": "7.2.3",
+    "rimraf": "3.0.2"
   }
 }
