@@ -57,8 +57,8 @@ const OnboardingFlow = () => {
   };
 
   const renderProgressIndicator = () => (
-    <div className="w-full max-w-md mx-auto mb-3">
-      <div className="flex items-center justify-between mb-1">
+    <div className="w-full max-w-md mx-auto mb-4 sm:mb-3">
+      <div className="flex items-center justify-between mb-2">
         <div className="flex items-center">
           <button
             onClick={prevStep}
@@ -104,15 +104,15 @@ const OnboardingFlow = () => {
         </p>
       </div>
       
-      <div className="bg-white rounded-2xl p-4 border border-gray-200 shadow-sm">
+      <div className="bg-white rounded-2xl p-3 sm:p-4 border border-gray-200 shadow-sm">
         <div className="flex items-center mb-3">
           <Heart className="mr-2 text-red-500" size={18} />
           <h3 className="text-base font-semibold text-gray-900">Your Interests & Passions</h3>
         </div>
         
-        <div className="grid grid-cols-2 gap-2 sm:gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {interestOptions.map(interest => (
-            <label key={interest} className="flex items-center space-x-2 p-2 sm:space-x-3 sm:p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+            <label key={interest} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
               <input
                 type="checkbox"
                 checked={profile.interests.includes(interest)}
@@ -125,7 +125,7 @@ const OnboardingFlow = () => {
                 }}
                 className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500 transition-transform hover:scale-110 checked:animate-pulse"
               />
-              <span className="text-xs sm:text-sm font-medium text-gray-700">{interest}</span>
+              <span className="text-sm font-medium text-gray-700">{interest}</span>
             </label>
           ))}
         </div>
@@ -323,46 +323,48 @@ const OnboardingFlow = () => {
   };
 
   const renderNavigation = () => (
-    <div className="fixed bottom-4 left-4 right-4 z-50 max-w-2xl mx-auto">
-      {currentOnboardingStep < 4 ? (
-        <button
-          onClick={nextStep}
-          disabled={!isStepValid(currentOnboardingStep)}
-          className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-4 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg transition-all flex items-center justify-center text-lg shadow-lg border-2 border-white"
-        >
-          Continue
-          <ChevronRight className="ml-2" size={20} />
-        </button>
-      ) : (
-        <button
-          onClick={generatePersonalizedIdeas}
-          disabled={!isStepValid(currentOnboardingStep) || isGenerating}
-          className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-4 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg transition-all flex items-center justify-center text-lg shadow-lg border-2 border-white"
-        >
-          {isGenerating ? (
-            <>
-              <Loader className="animate-spin mr-2" size={20} />
-              Generating Ideas...
-            </>
-          ) : (
-            <>
-              <Lightbulb className="mr-2" size={20} />
-              Generate My Ideas
-            </>
-          )}
-        </button>
-      )}
-      
-      {isGenerating && (
-        <p className="text-sm text-gray-500 mt-3 text-center">
-          Analyzing your profile to create personalized SaaS ideas...
-        </p>
-      )}
+    <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-4 shadow-lg">
+      <div className="max-w-2xl mx-auto">
+        {currentOnboardingStep < 4 ? (
+          <button
+            onClick={nextStep}
+            disabled={!isStepValid(currentOnboardingStep)}
+            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-4 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg transition-all flex items-center justify-center text-base"
+          >
+            Continue
+            <ChevronRight className="ml-2" size={18} />
+          </button>
+        ) : (
+          <button
+            onClick={generatePersonalizedIdeas}
+            disabled={!isStepValid(currentOnboardingStep) || isGenerating}
+            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-4 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg transition-all flex items-center justify-center text-base"
+          >
+            {isGenerating ? (
+              <>
+                <Loader className="animate-spin mr-2" size={18} />
+                Generating Ideas...
+              </>
+            ) : (
+              <>
+                <Lightbulb className="mr-2" size={18} />
+                Generate My Ideas
+              </>
+            )}
+          </button>
+        )}
+        
+        {isGenerating && (
+          <p className="text-xs text-gray-500 mt-2 text-center">
+            Analyzing your profile to create personalized SaaS ideas...
+          </p>
+        )}
+      </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 py-2 px-4 pb-16">
+    <div className="min-h-screen bg-gray-50 py-2 px-3 sm:px-4 pb-24">
       <div className="max-w-4xl mx-auto">
         {apiError && (
           <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-8 max-w-2xl mx-auto">

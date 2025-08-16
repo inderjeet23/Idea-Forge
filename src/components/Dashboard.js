@@ -16,10 +16,15 @@ const Dashboard = () => {
       try {
         const response = await fetch(`/.netlify/functions/get-saved-ideas?userId=${user.id}`);
         if (!response.ok) {
-          throw new Error('Could not fetch saved ideas.');
+          if (response.status === 404) {
+            setSavedIdeas([]);
+          } else {
+            throw new Error('Could not fetch saved ideas.');
+          }
+        } else {
+          const data = await response.json();
+          setSavedIdeas(data);
         }
-        const data = await response.json();
-        setSavedIdeas(data);
       } catch (error) {
         console.error('Error fetching saved ideas:', error);
         setError('Failed to load your saved ideas.');
