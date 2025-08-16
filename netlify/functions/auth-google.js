@@ -43,13 +43,24 @@ exports.handler = async (event) => {
 
     // If user does not exist, create them in Supabase auth and our public table
     if (!user) {
-        // We must create a corresponding user in Supabase's own `auth.users` table first.
-        // For simplicity with OAuth, we can let Supabase handle this, but for now, we'll just insert into our public table.
-        // A more robust solution would use Supabase's admin auth functions.
+        // Create user in Supabase auth first
+        const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
+            email: email,
+            email_confirm: true,
+            user_metadata: {
+                name: name,
+                avatar_url: picture,
+                google_id: google_id
+            }
+        });
+
+        if (authError) throw authError;
+
+        // Now create in our public users table
         const { data: newUser, error: createError } = await supabase
             .from('users')
             .insert({
-                id: auth.uid(), // This is a placeholder, requires a proper Supabase session
+                id: authUser.user.id,
                 email: email,
                 name: name,
                 avatar_url: picture,
