@@ -1,12 +1,14 @@
 import React from 'react';
 import { TrendingUp, Users, CheckCircle } from 'lucide-react';
+import { useAppContext } from '../context/AppContext';
 
-const ValidationStep = ({ 
-  selectedIdea, 
-  validationData, 
-  setCurrentStep, 
-  saveIdea 
-}) => {
+const ValidationStep = () => {
+  const {
+    selectedIdea,
+    validationData,
+    setCurrentStep,
+    saveIdea
+  } = useAppContext();
   return (
     <div className="max-w-6xl mx-auto">
       <div className="text-center mb-8">

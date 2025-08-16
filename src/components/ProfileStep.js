@@ -1,18 +1,20 @@
 import React from 'react';
 import { Code, Heart, Target, Star, Lightbulb, Loader, AlertCircle, Github, Globe } from 'lucide-react';
+import { useAppContext } from '../context/AppContext';
 
-const ProfileStep = ({ 
-  profile, 
-  handleProfileChange, 
-  generatePersonalizedIdeas, 
-  isGenerating, 
-  geminiApiKey, 
-  apiError,
-  skillOptions,
-  interestOptions,
-  constraintOptions,
-  valueOptions 
-}) => {
+const ProfileStep = () => {
+  const {
+    profile,
+    handleProfileChange,
+    generatePersonalizedIdeas,
+    isGenerating,
+    geminiApiKey,
+    apiError,
+    skillOptions,
+    interestOptions,
+    constraintOptions,
+    valueOptions
+  } = useAppContext();
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       <div className="text-center mb-8">

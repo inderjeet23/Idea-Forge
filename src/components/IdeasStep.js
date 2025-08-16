@@ -1,16 +1,18 @@
 import React from 'react';
 import { Lightbulb, Target, TrendingUp } from 'lucide-react';
+import { useAppContext } from '../context/AppContext';
 import IdeaCard from './IdeaCard';
 
-const IdeasStep = ({ 
-  generatedIdeas, 
-  validateIdeaWithTrends, 
-  saveIdea, 
-  isValidating, 
-  selectedIdea, 
-  setCurrentStep, 
-  geminiApiKey 
-}) => {
+const IdeasStep = () => {
+  const {
+    generatedIdeas,
+    validateIdeaWithTrends,
+    saveIdea,
+    isValidating,
+    selectedIdea,
+    setCurrentStep,
+    geminiApiKey
+  } = useAppContext();
   return (
     <div className="max-w-6xl mx-auto">
       <div className="text-center mb-8">
