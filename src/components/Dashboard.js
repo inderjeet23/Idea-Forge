@@ -31,8 +31,19 @@ const Dashboard = () => {
     fetchIdeas();
   }, [user]);
 
+  const [customPrompt, setCustomPrompt] = useState('');
+  const [showCustomPrompt, setShowCustomPrompt] = useState(false);
+
   const handleGenerateNewIdeas = () => {
     setCurrentStep('profile');
+  };
+
+  const handleCustomPromptGeneration = () => {
+    if (customPrompt.trim()) {
+      // TODO: Implement custom prompt generation logic
+      console.log('Generating ideas with custom prompt:', customPrompt);
+      setCurrentStep('ideas');
+    }
   };
 
   if (isLoading) {
@@ -139,21 +150,65 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Generate New Ideas Button */}
-        <div className="mb-8">
-          <button
-            onClick={handleGenerateNewIdeas}
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center"
-          >
-            <Plus className="mr-2" size={20} />
-            Generate New Ideas
-          </button>
-        </div>
 
         {/* Error State */}
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
             <p className="text-red-700">{error}</p>
+          </div>
+        )}
+
+        {/* Generate More Ideas Section */}
+        {savedIdeas.length > 0 && (
+          <div className="mb-8 bg-white rounded-lg p-6 border border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Want to explore more ideas?</h3>
+            <div className="flex flex-wrap gap-4">
+              <button
+                onClick={handleGenerateNewIdeas}
+                className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors inline-flex items-center"
+              >
+                <Plus className="mr-2" size={20} />
+                Start New Idea Discovery Journey
+              </button>
+              
+              <button
+                onClick={() => setShowCustomPrompt(!showCustomPrompt)}
+                className="bg-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-purple-700 transition-colors inline-flex items-center"
+              >
+                <Lightbulb className="mr-2" size={20} />
+                Generate Ideas with Custom Prompt
+              </button>
+            </div>
+            
+            {showCustomPrompt && (
+              <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Describe what kind of business ideas you're looking for:
+                </label>
+                <textarea
+                  value={customPrompt}
+                  onChange={(e) => setCustomPrompt(e.target.value)}
+                  placeholder="e.g., 'I want to build a SaaS tool for small businesses that helps with inventory management' or 'Ideas for sustainable products that solve everyday problems'"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                  rows={3}
+                />
+                <div className="mt-3 flex space-x-2">
+                  <button
+                    onClick={handleCustomPromptGeneration}
+                    disabled={!customPrompt.trim()}
+                    className="bg-purple-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-purple-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  >
+                    Generate Ideas
+                  </button>
+                  <button
+                    onClick={() => setShowCustomPrompt(false)}
+                    className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -178,13 +233,53 @@ const Dashboard = () => {
             <p className="text-gray-600 mb-6">
               Start by generating some personalized business ideas based on your profile.
             </p>
-            <button
-              onClick={handleGenerateNewIdeas}
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors inline-flex items-center"
-            >
-              <Plus className="mr-2" size={20} />
-              Generate Your First Ideas
-            </button>
+            <div className="space-y-4">
+              <button
+                onClick={handleGenerateNewIdeas}
+                className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors inline-flex items-center mr-4"
+              >
+                <Plus className="mr-2" size={20} />
+                Start Idea Discovery Journey
+              </button>
+              
+              <button
+                onClick={() => setShowCustomPrompt(!showCustomPrompt)}
+                className="bg-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-purple-700 transition-colors inline-flex items-center"
+              >
+                <Lightbulb className="mr-2" size={20} />
+                Generate Ideas with Custom Prompt
+              </button>
+              
+              {showCustomPrompt && (
+                <div className="mt-4 p-4 bg-white rounded-lg border border-gray-200">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Describe what kind of business ideas you're looking for:
+                  </label>
+                  <textarea
+                    value={customPrompt}
+                    onChange={(e) => setCustomPrompt(e.target.value)}
+                    placeholder="e.g., 'I want to build a SaaS tool for small businesses that helps with inventory management' or 'Ideas for sustainable products that solve everyday problems'"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                    rows={3}
+                  />
+                  <div className="mt-3 flex space-x-2">
+                    <button
+                      onClick={handleCustomPromptGeneration}
+                      disabled={!customPrompt.trim()}
+                      className="bg-purple-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-purple-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    >
+                      Generate Ideas
+                    </button>
+                    <button
+                      onClick={() => setShowCustomPrompt(false)}
+                      className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>
