@@ -12,6 +12,7 @@ export const useAppContext = () => {
 
 export const AppProvider = ({ children }) => {
   const [currentStep, setCurrentStep] = useState('profile');
+  const [currentOnboardingStep, setCurrentOnboardingStep] = useState(1);
   const [profile, setProfile] = useState({
     skills: [],
     interests: [],
@@ -334,6 +335,8 @@ export const AppProvider = ({ children }) => {
   const value = {
     currentStep,
     setCurrentStep,
+    currentOnboardingStep,
+    setCurrentOnboardingStep,
     profile,
     setProfile,
     generatedIdeas,
