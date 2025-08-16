@@ -265,7 +265,6 @@ Return ONLY valid JSON in this exact format:
     const { skills, interests, values } = userProfile;
     
     // Generate more sophisticated ideas
-    const { skills, interests, values } = userProfile;
     for (let i = 0; i < Math.min(6, interests.length * 2); i++) {
       const interest = interests[i % interests.length];
       const skill = skills[i % skills.length] || skills[0];
