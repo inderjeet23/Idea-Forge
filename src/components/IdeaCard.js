@@ -3,7 +3,7 @@ import { Star, Search, Loader, Check } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 
 const IdeaCard = ({ idea, validateIdeaWithTrends, saveIdea, isValidating, selectedIdea }) => {
-  const { savedIdeas } = useAppContext();
+  const { savedIdeas, isSaving } = useAppContext();
   const isAlreadySaved = savedIdeas.find(saved => saved.id === idea.id);
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all">
@@ -26,14 +26,22 @@ const IdeaCard = ({ idea, validateIdeaWithTrends, saveIdea, isValidating, select
           </div>
           <button
             onClick={() => saveIdea(idea)}
-            disabled={isAlreadySaved}
+            disabled={isAlreadySaved || isSaving}
             className={`transition-colors ${
               isAlreadySaved 
                 ? 'text-green-500 cursor-not-allowed' 
-                : 'text-gray-400 hover:text-yellow-500'
+                : isSaving 
+                  ? 'text-gray-300 cursor-not-allowed'
+                  : 'text-gray-400 hover:text-yellow-500'
             }`}
           >
-            {isAlreadySaved ? <Check size={18} /> : <Star size={18} />}
+            {isAlreadySaved ? (
+              <Check size={18} />
+            ) : isSaving ? (
+              <Loader className="animate-spin" size={18} />
+            ) : (
+              <Star size={18} />
+            )}
           </button>
         </div>
         

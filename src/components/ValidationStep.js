@@ -7,7 +7,8 @@ const ValidationStep = () => {
     selectedIdea,
     validationData,
     setCurrentStep,
-    saveIdea
+    saveIdea,
+    isAuthenticated
   } = useAppContext();
   return (
     <div className="max-w-6xl mx-auto">
@@ -175,6 +176,14 @@ const ValidationStep = () => {
         >
           Save Validated Idea
         </button>
+        {isAuthenticated && (
+          <button
+            onClick={() => setCurrentStep('dashboard')}
+            className="text-purple-600 hover:text-purple-700 font-medium"
+          >
+            Go to Dashboard →
+          </button>
+        )}
       </div>
     </div>
   );

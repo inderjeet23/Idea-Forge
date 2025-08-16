@@ -31,6 +31,7 @@ export const AppProvider = ({ children }) => {
   const [apiError, setApiError] = useState('');
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
 
   const skillOptions = [
@@ -416,15 +417,17 @@ export const AppProvider = ({ children }) => {
   const saveIdea = async (idea) => {
     if (!user) {
       console.error('User not authenticated');
-      return;
+      alert('Please sign in to save ideas');
+      return false;
     }
 
     // Check if idea is already saved locally
     if (savedIdeas.find(saved => saved.id === idea.id)) {
-      return;
+      return true;
     }
 
     try {
+      setIsSaving(true);
       // Save to Supabase via Netlify function
       const response = await fetch('/.netlify/functions/save-idea', {
         method: 'POST',
@@ -438,7 +441,8 @@ export const AppProvider = ({ children }) => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to save idea to database');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save idea to database');
       }
 
       const result = await response.json();
@@ -447,10 +451,15 @@ export const AppProvider = ({ children }) => {
       setSavedIdeas([...savedIdeas, { ...idea, savedAt: new Date() }]);
       
       console.log('Idea saved successfully:', result.savedIdea);
+      return true;
     } catch (error) {
       console.error('Error saving idea:', error);
-      // Fallback to local storage only
+      alert(`Failed to save idea: ${error.message}`);
+      // Still save locally as fallback
       setSavedIdeas([...savedIdeas, { ...idea, savedAt: new Date() }]);
+      return false;
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -501,6 +510,8 @@ export const AppProvider = ({ children }) => {
     setIsGenerating,
     isValidating,
     setIsValidating,
+    isSaving,
+    setIsSaving,
     validationData,
     setValidationData,
     apiError,

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Lightbulb, Target, TrendingUp, Crown, Search, Loader, Star, ChevronLeft, ChevronRight, Check } from 'lucide-react';
+import { Lightbulb, Target, TrendingUp, Crown, Search, Loader, Star, ChevronLeft, ChevronRight, Check, Grid, RotateCcw } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import IdeaCard from './IdeaCard';
 
@@ -12,11 +12,14 @@ const IdeasStep = () => {
     selectedIdea,
     setCurrentStep,
     geminiApiKey,
-    savedIdeas
+    savedIdeas,
+    isAuthenticated,
+    isSaving
   } = useAppContext();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const [showCarousel, setShowCarousel] = useState(true);
   const carouselRef = useRef(null);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
@@ -153,15 +156,22 @@ const IdeasStep = () => {
             </button>
             <button
               onClick={() => saveIdea(idea)}
-              disabled={isAlreadySaved}
+              disabled={isAlreadySaved || isSaving}
               className={`px-4 sm:px-6 py-3 rounded-lg font-semibold transition-colors border-2 flex items-center justify-center text-sm sm:text-base ${
                 isAlreadySaved 
                   ? 'bg-green-50 text-green-600 border-green-200 cursor-not-allowed'
-                  : 'bg-white text-purple-600 hover:bg-purple-50 border-purple-200'
+                  : isSaving 
+                    ? 'bg-gray-50 text-gray-600 border-gray-200 cursor-not-allowed'
+                    : 'bg-white text-purple-600 hover:bg-purple-50 border-purple-200'
               }`}
             >
-              {isAlreadySaved ? <Check className="mr-2" size={16} /> : <Star className="mr-2" size={16} />}
-              {isAlreadySaved ? 'Saved!' : 'Save Idea'}
+              {isAlreadySaved ? (
+                <><Check className="mr-2" size={16} />Saved!</>
+              ) : isSaving ? (
+                <><Loader className="animate-spin mr-2" size={16} />Saving...</>
+              ) : (
+                <><Star className="mr-2" size={16} />Save Idea</>
+              )}
             </button>
           </div>
         </div>
@@ -197,9 +207,38 @@ const IdeasStep = () => {
       </div>
 
       {generatedIdeas.length > 0 && (
+        <div className="flex justify-center mb-6">
+          <div className="bg-white rounded-lg p-1 border border-gray-200 shadow-sm flex">
+            <button
+              onClick={() => setShowCarousel(true)}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center ${
+                showCarousel 
+                  ? 'bg-purple-600 text-white' 
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              <RotateCcw className="mr-2" size={16} />
+              Carousel View
+            </button>
+            <button
+              onClick={() => setShowCarousel(false)}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center ${
+                !showCarousel 
+                  ? 'bg-purple-600 text-white' 
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              <Grid className="mr-2" size={16} />
+              Grid View
+            </button>
+          </div>
+        </div>
+      )}
+
+      {generatedIdeas.length > 0 && (
         <div className="relative">
-          {/* Mobile Carousel */}
-          {isMobile ? (
+          {/* Carousel View */}
+          {showCarousel ? (
             <div 
               className="relative overflow-hidden"
               ref={carouselRef}
@@ -221,23 +260,23 @@ const IdeasStep = () => {
               ))}
               
               {/* Navigation arrows */}
-              <div className="absolute top-1/2 left-2 transform -translate-y-1/2">
+              <div className="absolute top-1/2 left-2 sm:left-4 transform -translate-y-1/2">
                 <button
                   onClick={prevIdea}
                   disabled={currentIndex === 0}
-                  className="bg-white/80 hover:bg-white p-2 rounded-full shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  className="bg-white/80 hover:bg-white p-2 sm:p-3 rounded-full shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
-                  <ChevronLeft size={20} className="text-gray-700" />
+                  <ChevronLeft size={isMobile ? 20 : 24} className="text-gray-700" />
                 </button>
               </div>
               
-              <div className="absolute top-1/2 right-2 transform -translate-y-1/2">
+              <div className="absolute top-1/2 right-2 sm:right-4 transform -translate-y-1/2">
                 <button
                   onClick={nextIdea}
                   disabled={currentIndex === generatedIdeas.length - 1}
-                  className="bg-white/80 hover:bg-white p-2 rounded-full shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  className="bg-white/80 hover:bg-white p-2 sm:p-3 rounded-full shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
-                  <ChevronRight size={20} className="text-gray-700" />
+                  <ChevronRight size={isMobile ? 20 : 24} className="text-gray-700" />
                 </button>
               </div>
               
@@ -262,11 +301,120 @@ const IdeasStep = () => {
               </div>
             </div>
           ) : (
-            /* Desktop Layout */
+            /* Grid Layout */
             <div>
               {topMatch && (
                 <div className="mb-8">
-                  <CarouselIdeaCard idea={topMatch} index={0} isActive={true} />
+                  <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-2xl border-2 border-purple-200 shadow-lg p-4 sm:p-6 lg:p-8 relative">
+                    <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
+                      <span className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-2 py-1 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm font-semibold flex items-center">
+                        <Crown className="mr-1" size={12} />
+                        Best Match
+                      </span>
+                    </div>
+                    
+                    <div className="max-w-4xl">
+                      <div className="flex flex-wrap items-center gap-2 mb-3 sm:mb-4">
+                        <span className={`px-2 py-1 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm font-medium ${
+                          topMatch.matchScore >= 90 ? 'bg-green-100 text-green-700' :
+                          topMatch.matchScore >= 80 ? 'bg-blue-100 text-blue-700' :
+                          'bg-yellow-100 text-yellow-700'
+                        }`}>
+                          {topMatch.matchScore}% match
+                        </span>
+                        <span className={`px-2 py-1 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm font-medium ${
+                          topMatch.generatedBy === 'Gemini AI' ? 'bg-purple-100 text-purple-700' :
+                          'bg-blue-100 text-blue-700'
+                        }`}>
+                          {topMatch.generatedBy === 'Gemini AI' ? 'Gemini' : 'AI'}
+                        </span>
+                      </div>
+                      
+                      <h3 className="font-bold text-lg sm:text-xl lg:text-2xl mb-3 sm:mb-4 text-gray-900">{topMatch.title}</h3>
+                      <p className="text-gray-700 text-sm sm:text-base lg:text-lg mb-4 sm:mb-6 leading-relaxed">{topMatch.description}</p>
+                      
+                      {topMatch.matchReasoning && (
+                        <div className="bg-white/70 p-3 sm:p-4 rounded-lg mb-4 sm:mb-6 border border-purple-100">
+                          <p className="text-xs sm:text-sm text-purple-800">
+                            <strong className="text-purple-900">Why this is perfect for you:</strong> {topMatch.matchReasoning}
+                          </p>
+                        </div>
+                      )}
+                      
+                      <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:gap-4 mb-4 sm:mb-6">
+                        <div className="bg-white/70 p-2 sm:p-3 rounded-lg">
+                          <div className="text-xs text-gray-500 mb-1">Market Size</div>
+                          <div className="font-semibold text-gray-900 text-xs sm:text-sm">{topMatch.market}</div>
+                        </div>
+                        <div className="bg-white/70 p-2 sm:p-3 rounded-lg">
+                          <div className="text-xs text-gray-500 mb-1">Complexity</div>
+                          <div className="font-semibold text-gray-900 text-xs sm:text-sm">{topMatch.complexity}</div>
+                        </div>
+                        <div className="bg-white/70 p-2 sm:p-3 rounded-lg">
+                          <div className="text-xs text-gray-500 mb-1">Time to Revenue</div>
+                          <div className="font-semibold text-gray-900 text-xs sm:text-sm">{topMatch.timeToRevenue}</div>
+                        </div>
+                        {topMatch.confidence && (
+                          <div className="bg-white/70 p-2 sm:p-3 rounded-lg">
+                            <div className="text-xs text-gray-500 mb-1">Confidence</div>
+                            <div className="font-semibold text-gray-900 text-xs sm:text-sm">{topMatch.confidence}%</div>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="flex flex-wrap gap-1 sm:gap-2 mb-4 sm:mb-6">
+                        {topMatch.tags.slice(0, 4).map(tag => (
+                          <span key={tag} className="px-2 py-1 bg-white/70 text-gray-700 rounded-full text-xs font-medium">
+                            {tag}
+                          </span>
+                        ))}
+                        {topMatch.tags.length > 4 && (
+                          <span className="px-2 py-1 bg-white/70 text-gray-700 rounded-full text-xs font-medium">
+                            +{topMatch.tags.length - 4} more
+                          </span>
+                        )}
+                      </div>
+                      
+                      <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
+                        <button
+                          onClick={() => validateIdeaWithTrends(topMatch)}
+                          disabled={isValidating}
+                          className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 sm:px-6 lg:px-8 py-3 rounded-lg font-semibold hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center text-sm sm:text-base"
+                        >
+                          {isValidating && selectedIdea?.id === topMatch.id ? (
+                            <>
+                              <Loader className="animate-spin mr-2" size={16} />
+                              Validating...
+                            </>
+                          ) : (
+                            <>
+                              <Search className="mr-2" size={16} />
+                              Validate with Market Data
+                            </>
+                          )}
+                        </button>
+                        <button
+                          onClick={() => saveIdea(topMatch)}
+                          disabled={savedIdeas.find(saved => saved.id === topMatch.id) || isSaving}
+                          className={`px-4 sm:px-6 py-3 rounded-lg font-semibold transition-colors border-2 flex items-center justify-center text-sm sm:text-base ${
+                            savedIdeas.find(saved => saved.id === topMatch.id)
+                              ? 'bg-green-50 text-green-600 border-green-200 cursor-not-allowed'
+                              : isSaving 
+                                ? 'bg-gray-50 text-gray-600 border-gray-200 cursor-not-allowed'
+                                : 'bg-white text-purple-600 hover:bg-purple-50 border-purple-200'
+                          }`}
+                        >
+                          {savedIdeas.find(saved => saved.id === topMatch.id) ? (
+                            <><Check className="mr-2" size={16} />Saved!</>
+                          ) : isSaving ? (
+                            <><Loader className="animate-spin mr-2" size={16} />Saving...</>
+                          ) : (
+                            <><Star className="mr-2" size={16} />Save Idea</>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
               
@@ -292,13 +440,21 @@ const IdeasStep = () => {
         </div>
       )}
 
-      <div className="text-center mt-6 sm:mt-8 pb-4">
+      <div className="text-center mt-6 sm:mt-8 pb-4 space-x-4">
         <button
           onClick={() => setCurrentStep('profile')}
           className="text-blue-600 hover:text-blue-700 font-medium text-sm sm:text-base"
         >
           ← Back to Profile
         </button>
+        {isAuthenticated && (
+          <button
+            onClick={() => setCurrentStep('dashboard')}
+            className="text-purple-600 hover:text-purple-700 font-medium text-sm sm:text-base"
+          >
+            Go to Dashboard →
+          </button>
+        )}
       </div>
     </div>
   );
