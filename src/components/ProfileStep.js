@@ -8,7 +8,6 @@ const ProfileStep = () => {
     handleProfileChange,
     generatePersonalizedIdeas,
     isGenerating,
-    geminiApiKey,
     apiError,
     skillOptions,
     interestOptions,
@@ -39,23 +38,6 @@ const ProfileStep = () => {
         </div>
       </div>
 
-      <div className={`rounded-xl p-4 border ${
-        geminiApiKey && geminiApiKey !== 'your_gemini_api_key_here' 
-          ? 'bg-green-50 border-green-200' 
-          : 'bg-yellow-50 border-yellow-200'
-      }`}>
-        <div className="flex items-center">
-          <div className={`w-2 h-2 rounded-full mr-2 ${
-            geminiApiKey && geminiApiKey !== 'your_gemini_api_key_here' ? 'bg-green-500' : 'bg-yellow-500'
-          }`}></div>
-          <p className="text-sm">
-            {geminiApiKey && geminiApiKey !== 'your_gemini_api_key_here' 
-              ? '🚀 Gemini AI connected - You\'ll get real AI-generated ideas!'
-              : '⚡ Demo mode - Using enhanced mock data. Add REACT_APP_GEMINI_API_KEY for real AI.'
-            }
-          </p>
-        </div>
-      </div>
 
       {apiError && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-4">
@@ -239,7 +221,7 @@ const ProfileStep = () => {
           {isGenerating ? (
             <>
               <Loader className="animate-spin mr-2" size={20} />
-              {geminiApiKey && geminiApiKey !== 'your_gemini_api_key_here' ? 'AI Generating Ideas...' : 'Generating Enhanced Ideas...'}
+              Generating Ideas...
             </>
           ) : (
             <>
@@ -250,10 +232,7 @@ const ProfileStep = () => {
         </button>
         {isGenerating && (
           <p className="text-sm text-gray-500 mt-2">
-            {geminiApiKey && geminiApiKey !== 'your_gemini_api_key_here' 
-              ? 'Gemini AI is analyzing your profile to create personalized SaaS ideas...'
-              : 'Analyzing your profile to create personalized SaaS ideas...'
-            }
+            Analyzing your profile to create personalized SaaS ideas...
           </p>
         )}
       </div>
