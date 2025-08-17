@@ -17,9 +17,8 @@ const IdeaForgeContent = () => {
       return;
     }
 
-    if (isAuthenticated && currentStep === 'profile') {
-      setCurrentStep('dashboard');
-    } else if (!isAuthenticated && currentStep !== 'profile') {
+    // Only redirect to profile if user is not authenticated and not already on profile
+    if (!isAuthenticated && currentStep !== 'profile') {
       setCurrentStep('profile');
     }
   }, [isAuthenticated, currentStep, setCurrentStep]);

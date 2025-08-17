@@ -11,7 +11,6 @@ const LoginButton = () => {
     setErrorMessage('');
     
     try {
-      console.log('Attempting to sign in with Google...');
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -19,18 +18,11 @@ const LoginButton = () => {
         }
       });
 
-      console.log('OAuth response:', { data, error });
-
       if (error) {
-        console.error('OAuth error:', error);
         throw new Error(error.message || 'Supabase authentication failed.');
       }
 
-      if (data?.url) {
-        console.log('Redirecting to:', data.url);
-        // OAuth flow will redirect the user
-      } else {
-        console.warn('No redirect URL received from OAuth');
+      if (!data?.url) {
         setAuthState('error');
         setErrorMessage('OAuth configuration issue. Check console for details.');
       }

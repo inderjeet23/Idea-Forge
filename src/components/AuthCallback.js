@@ -19,8 +19,8 @@ const AuthCallback = () => {
         }
         
         if (data.session) {
-          // User is authenticated, redirect to dashboard
-          setCurrentStep('dashboard');
+          // User is authenticated, redirect to landing page
+          setCurrentStep('profile');
         } else {
           // No session found, redirect to login
           setCurrentStep('profile');
