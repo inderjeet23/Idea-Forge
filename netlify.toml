@@ -7,6 +7,7 @@
 [build.environment]
   NODE_VERSION = "18.19.0"
   NPM_VERSION = "10.2.4"
+  SECRETS_SCAN_OMIT_KEYS = "SUPABASE_ANON_KEY,REACT_APP_SUPABASE_ANON_KEY"
 
 [functions]
   directory = "netlify/functions"
