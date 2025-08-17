@@ -271,9 +271,86 @@ Report Date: ${new Date().toISOString()}
               </div>
             )}
           </div>
+        </div>
 
-          {/* Target Audience Section */}
-          {validationData?.targetAudience && (
+        {/* Sidebar - Validation Summary */}
+        <div className="lg:col-span-1">
+          <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm sticky top-4">
+            <h3 className="font-semibold text-lg mb-4 flex items-center">
+              <Users className="mr-2 text-blue-500" size={20} />
+              Validation Summary
+            </h3>
+            
+            {validationData?.competitorAnalysis && (
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-medium mb-2">Competition</h4>
+                  <div className="text-sm text-gray-600 space-y-1">
+                    <div className="flex justify-between">
+                      <span>Direct:</span>
+                      <span className="font-medium">{validationData.competitorAnalysis.directCompetitors}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Indirect:</span>
+                      <span className="font-medium">{validationData.competitorAnalysis.indirectCompetitors}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Avg Pricing:</span>
+                      <span className="font-medium">{validationData.competitorAnalysis.averagePricing}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <h4 className="font-medium mb-2">Market Gaps</h4>
+                  <ul className="text-sm text-gray-600 space-y-1">
+                    {validationData.competitorAnalysis.marketGaps.slice(0, 3).map((gap, index) => (
+                      <li key={index} className="flex items-start">
+                        <span className="text-green-500 mr-2 mt-0.5">•</span>
+                        {gap}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+            
+            {validationData?.demandSignals && (
+              <div className="mt-6 pt-4 border-t border-gray-200">
+                <h4 className="font-medium mb-3">Demand Score</h4>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex-1 bg-gray-200 rounded-full h-2 mr-3">
+                    <div 
+                      className="bg-gradient-to-r from-green-400 to-blue-500 h-2 rounded-full"
+                      style={{ width: `${validationData.demandSignals.demandScore}%` }}
+                    ></div>
+                  </div>
+                  <span className="text-sm font-medium">{validationData.demandSignals.demandScore}/100</span>
+                </div>
+                <p className="text-xs text-gray-600">
+                  Score: {validationData.demandSignals.demandScore}/100
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Full-width sections below the grid */}
+      <div className="mt-8 space-y-8">
+        {/* Target Audience Section */}
+        {validationData?.loadingEnhancedInsights ? (
+          <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+            <h3 className="font-semibold text-lg mb-4 flex items-center">
+              <User className="mr-2 text-blue-500" size={20} />
+              Target Audience
+            </h3>
+            <div className="flex items-center justify-center py-12">
+              <Loader className="animate-spin mr-3 text-blue-500" size={24} />
+              <span className="text-gray-600">Generating personalized audience insights...</span>
+            </div>
+          </div>
+        ) : validationData?.targetAudience && (
             <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
               <h3 className="font-semibold text-lg mb-4 flex items-center">
                 <User className="mr-2 text-blue-500" size={20} />
@@ -334,7 +411,18 @@ Report Date: ${new Date().toISOString()}
           )}
 
           {/* Monetization Strategy Section */}
-          {validationData?.monetizationStrategy && (
+          {validationData?.loadingEnhancedInsights ? (
+            <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+              <h3 className="font-semibold text-lg mb-4 flex items-center">
+                <DollarSign className="mr-2 text-green-500" size={20} />
+                Monetization Strategy
+              </h3>
+              <div className="flex items-center justify-center py-12">
+                <Loader className="animate-spin mr-3 text-green-500" size={24} />
+                <span className="text-gray-600">Generating pricing and revenue strategy...</span>
+              </div>
+            </div>
+          ) : validationData?.monetizationStrategy && (
             <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
               <h3 className="font-semibold text-lg mb-4 flex items-center">
                 <DollarSign className="mr-2 text-green-500" size={20} />
@@ -505,31 +593,33 @@ Report Date: ${new Date().toISOString()}
             </div>
           )}
 
-          <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl p-6 border border-purple-200">
-            <h3 className="font-semibold text-lg mb-2">Ready to Build?</h3>
-            <p className="text-sm text-gray-600 mb-4">
+        {/* Ready to Build Section */}
+        <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl p-8 border border-purple-200">
+          <div className="max-w-4xl mx-auto text-center">
+            <h3 className="font-semibold text-2xl mb-3">Ready to Build?</h3>
+            <p className="text-gray-600 mb-6">
               Market data shows this idea has strong potential. Time to turn insights into action.
             </p>
             
-            <div className="space-y-2">
+            <div className="grid md:grid-cols-2 gap-4 max-w-2xl mx-auto">
               <button 
                 onClick={handleGenerateRoadmap}
                 disabled={isGeneratingRoadmap || validationData?.roadmapGenerated}
-                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-2 rounded-lg font-medium hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                className="bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               >
                 {isGeneratingRoadmap ? (
                   <>
-                    <Loader className="animate-spin mr-2" size={16} />
+                    <Loader className="animate-spin mr-2" size={18} />
                     Generating Roadmap...
                   </>
                 ) : validationData?.roadmapGenerated ? (
                   <>
-                    <CheckCircle className="mr-2" size={16} />
+                    <CheckCircle className="mr-2" size={18} />
                     Roadmap Generated
                   </>
                 ) : (
                   <>
-                    <Code className="mr-2" size={16} />
+                    <Code className="mr-2" size={18} />
                     Generate Technical Roadmap
                   </>
                 )}
@@ -537,16 +627,16 @@ Report Date: ${new Date().toISOString()}
               <button 
                 onClick={handleExportReport}
                 disabled={isExporting}
-                className="w-full border border-gray-300 text-gray-700 py-2 rounded-lg font-medium hover:bg-gray-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                className="border-2 border-purple-300 text-purple-700 py-3 px-6 rounded-lg font-medium hover:bg-purple-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               >
                 {isExporting ? (
                   <>
-                    <Loader className="animate-spin mr-2" size={16} />
+                    <Loader className="animate-spin mr-2" size={18} />
                     Exporting...
                   </>
                 ) : (
                   <>
-                    <Download className="mr-2" size={16} />
+                    <Download className="mr-2" size={18} />
                     Export Validation Report
                   </>
                 )}

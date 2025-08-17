@@ -608,12 +608,24 @@ export const AppProvider = ({ children }) => {
     setSelectedIdea(idea);
     
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Check if this idea already has cached validation data
+      if (idea.validationData) {
+        console.log('Using cached validation data for:', idea.title);
+        setValidationData(idea.validationData);
+        setCurrentStep('validation');
+        setIsValidating(false);
+        return;
+      }
       
-      // Generate basic validation data
+      // Show immediate progress - set basic data first
       const mockValidationData = await generateRealisticTrendsData(idea);
+      setValidationData({
+        ...mockValidationData,
+        loadingEnhancedInsights: true
+      });
+      setCurrentStep('validation');
       
-      // Generate enhanced insights using Gemini (with fallbacks)
+      // Generate enhanced insights in background using Gemini (with fallbacks)
       const [targetAudience, monetizationStrategy] = await Promise.all([
         generateValidationInsights(idea, 'targetAudience'),
         generateValidationInsights(idea, 'monetization')
@@ -624,11 +636,24 @@ export const AppProvider = ({ children }) => {
         ...mockValidationData,
         targetAudience,
         monetizationStrategy,
-        roadmapGenerated: false // Will be generated on-demand
+        roadmapGenerated: false,
+        loadingEnhancedInsights: false
       };
       
       setValidationData(enhancedValidationData);
-      setCurrentStep('validation');
+      
+      // Cache the validation data with the idea for future use
+      if (savedIdeas.find(saved => saved.id === idea.id)) {
+        // Update the saved idea with validation data
+        setSavedIdeas(prev => 
+          prev.map(savedIdea => 
+            savedIdea.id === idea.id 
+              ? { ...savedIdea, validationData: enhancedValidationData }
+              : savedIdea
+          )
+        );
+      }
+      
     } catch (error) {
       console.error('Error validating idea:', error);
       const mockValidationData = await generateRealisticTrendsData(idea);
@@ -678,7 +703,13 @@ export const AppProvider = ({ children }) => {
         console.error('Server error details:', errorData);
         throw new Error(`Failed to save idea: ${errorData.details || errorData.error || 'Unknown error'}`);
       }
-      setSavedIdeas(prev => [...prev, { ...idea, savedAt: new Date().toISOString() }]);
+      const savedIdea = { 
+        ...idea, 
+        savedAt: new Date().toISOString(),
+        // Include validation data if this idea was validated
+        ...(validationData && selectedIdea?.id === idea.id && { validationData })
+      };
+      setSavedIdeas(prev => [...prev, savedIdea]);
     } catch (error) {
       console.error('Error saving idea:', error);
       alert(`Failed to save idea: ${error.message}`);
