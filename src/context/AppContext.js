@@ -33,7 +33,7 @@ export const AppProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024);
   const [chatHistory, setChatHistory] = useState([]);
 
   useEffect(() => {
@@ -46,6 +46,17 @@ export const AppProvider = ({ children }) => {
     return () => {
       subscription.unsubscribe();
     };
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      // Auto-close sidebar on mobile, auto-open on desktop
+      const isDesktop = window.innerWidth >= 1024;
+      setSidebarOpen(isDesktop);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
 
