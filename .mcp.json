@@ -1,0 +1,11 @@
+            {
+              "mcpServers": [
+                {
+                  "type": "supabase",
+                  "name": "Supabase MCP Server",
+                  "config": {
+                    "accessToken": "sbp_467d27cd0ae618909443547e04ea2d79adafb754"
+                  }
+                }
+              ]
+            }
