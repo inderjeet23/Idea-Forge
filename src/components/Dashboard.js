@@ -4,38 +4,13 @@ import IdeaCard from './IdeaCard';
 import { Plus, User, Lightbulb, TrendingUp, Clock, LogOut, Home } from 'lucide-react';
 
 const Dashboard = () => {
-  const { user, logout, validateIdeaWithTrends, saveIdea, isValidating, selectedIdea, startOnboardingFlow, generateIdeasFromCustomPrompt, isGenerating, setCurrentStep, savedIdeas, setSavedIdeas } = useAppContext();
+  const { user, logout, validateIdeaWithTrends, saveIdea, isValidating, selectedIdea, startOnboardingFlow, generateIdeasFromCustomPrompt, isGenerating, setCurrentStep, savedIdeas } = useAppContext();
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
 
   useEffect(() => {
-    const fetchIdeas = async () => {
-      if (!user?.id) return;
-      
-      try {
-        const response = await fetch(`/.netlify/functions/get-saved-ideas?userId=${user.id}`);
-        if (!response.ok) {
-          if (response.status === 404) {
-            setSavedIdeas([]);
-          } else {
-            const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-            console.error('Server error details:', errorData);
-            throw new Error(`Could not fetch saved ideas: ${errorData.details || errorData.error || 'Unknown error'}`);
-          }
-        } else {
-          const data = await response.json();
-          setSavedIdeas(data);
-        }
-      } catch (error) {
-        console.error('Error fetching saved ideas:', error);
-        setError('Failed to load your saved ideas.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchIdeas();
-  }, [user, setSavedIdeas]);
+    // Just set loading to false since saved ideas are now loaded in AppContext
+    setIsLoading(false);
+  }, []);
 
   const [customPrompt, setCustomPrompt] = useState('');
   const [showCustomPrompt, setShowCustomPrompt] = useState(false);
@@ -171,12 +146,6 @@ const Dashboard = () => {
         </div>
 
 
-        {/* Error State */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-            <p className="text-red-700">{error}</p>
-          </div>
-        )}
 
         {/* Generate More Ideas Section */}
         {savedIdeas.length > 0 && (

@@ -59,6 +59,37 @@ export const AppProvider = ({ children }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  useEffect(() => {
+    const fetchSavedIdeas = async () => {
+      if (!user?.id) {
+        setSavedIdeas([]);
+        return;
+      }
+      
+      try {
+        const response = await fetch(`/.netlify/functions/get-saved-ideas?userId=${user.id}`);
+        if (!response.ok) {
+          if (response.status === 404) {
+            setSavedIdeas([]);
+          } else {
+            const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+            console.error('Server error details:', errorData);
+            throw new Error(`Could not fetch saved ideas: ${errorData.details || errorData.error || 'Unknown error'}`);
+          }
+        } else {
+          const data = await response.json();
+          setSavedIdeas(data);
+        }
+      } catch (error) {
+        console.error('Error fetching saved ideas:', error);
+      }
+    };
+
+    if (isAuthenticated && user?.id) {
+      fetchSavedIdeas();
+    }
+  }, [user, isAuthenticated]);
+
 
   const skillOptions = [
     'Frontend Development', 'Backend Development', 'Full-Stack Development', 'UI/UX Design', 

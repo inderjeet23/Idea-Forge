@@ -19,7 +19,7 @@ const IdeasStep = () => {
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
-  const [showCarousel, setShowCarousel] = useState(true);
+  const [showCarousel, setShowCarousel] = useState(window.innerWidth < 768);
   const carouselRef = useRef(null);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
@@ -38,24 +38,22 @@ const IdeasStep = () => {
     const diff = touchStartX.current - touchEndX.current;
     
     if (Math.abs(diff) > swipeThreshold) {
-      if (diff > 0 && currentIndex < generatedIdeas.length - 1) {
-        setCurrentIndex(currentIndex + 1);
-      } else if (diff < 0 && currentIndex > 0) {
-        setCurrentIndex(currentIndex - 1);
+      if (diff > 0) {
+        // Swipe left - next idea
+        setCurrentIndex((currentIndex + 1) % generatedIdeas.length);
+      } else if (diff < 0) {
+        // Swipe right - previous idea
+        setCurrentIndex(currentIndex === 0 ? generatedIdeas.length - 1 : currentIndex - 1);
       }
     }
   };
 
   const nextIdea = () => {
-    if (currentIndex < generatedIdeas.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-    }
+    setCurrentIndex((currentIndex + 1) % generatedIdeas.length);
   };
 
   const prevIdea = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
-    }
+    setCurrentIndex(currentIndex === 0 ? generatedIdeas.length - 1 : currentIndex - 1);
   };
 
   const topMatch = generatedIdeas.length > 0 ? generatedIdeas[0] : null;
@@ -65,7 +63,11 @@ const IdeasStep = () => {
     const isAlreadySaved = savedIdeas.find(saved => saved.id === idea.id);
     
     return (
-    <div className={`${isActive ? 'block' : 'hidden'} w-full`}>
+    <div className={`absolute inset-0 w-full transition-all duration-500 ease-in-out ${
+      isActive 
+        ? 'opacity-100 translate-x-0 pointer-events-auto' 
+        : 'opacity-0 translate-x-full pointer-events-none'
+    }`}>
       <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-2xl border-2 border-purple-200 shadow-lg p-4 sm:p-6 lg:p-8 relative min-h-[500px] sm:min-h-[400px]">
         <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
           <span className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-2 py-1 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm font-semibold flex items-center">
@@ -206,7 +208,7 @@ const IdeasStep = () => {
         </div>
       </div>
 
-      {generatedIdeas.length > 0 && (
+      {generatedIdeas.length > 0 && isMobile && (
         <div className="flex justify-center mb-6">
           <div className="bg-white rounded-lg p-1 border border-gray-200 shadow-sm flex">
             <button
@@ -238,9 +240,9 @@ const IdeasStep = () => {
       {generatedIdeas.length > 0 && (
         <div className="relative">
           {/* Carousel View */}
-          {showCarousel ? (
+          {showCarousel && isMobile ? (
             <div 
-              className="relative overflow-hidden"
+              className="relative overflow-hidden min-h-[600px] sm:min-h-[500px]"
               ref={carouselRef}
               onTouchStart={(e) => {
                 touchStartX.current = e.touches[0].clientX;
@@ -263,8 +265,7 @@ const IdeasStep = () => {
               <div className="absolute top-1/2 left-2 sm:left-4 transform -translate-y-1/2">
                 <button
                   onClick={prevIdea}
-                  disabled={currentIndex === 0}
-                  className="bg-white/80 hover:bg-white p-2 sm:p-3 rounded-full shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  className="bg-white/80 hover:bg-white p-2 sm:p-3 rounded-full shadow-lg transition-all"
                 >
                   <ChevronLeft size={isMobile ? 20 : 24} className="text-gray-700" />
                 </button>
@@ -273,8 +274,7 @@ const IdeasStep = () => {
               <div className="absolute top-1/2 right-2 sm:right-4 transform -translate-y-1/2">
                 <button
                   onClick={nextIdea}
-                  disabled={currentIndex === generatedIdeas.length - 1}
-                  className="bg-white/80 hover:bg-white p-2 sm:p-3 rounded-full shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  className="bg-white/80 hover:bg-white p-2 sm:p-3 rounded-full shadow-lg transition-all"
                 >
                   <ChevronRight size={isMobile ? 20 : 24} className="text-gray-700" />
                 </button>
@@ -421,7 +421,11 @@ const IdeasStep = () => {
               {otherIdeas.length > 0 && (
                 <div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-4">Other Great Options</h3>
-                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className={`grid gap-4 ${
+                    otherIdeas.length === 1 ? 'md:grid-cols-1 lg:grid-cols-1 justify-items-center' :
+                    otherIdeas.length === 2 ? 'md:grid-cols-2 lg:grid-cols-2 justify-items-center' :
+                    'md:grid-cols-2 lg:grid-cols-3'
+                  } ${otherIdeas.length < 3 ? 'max-w-2xl mx-auto' : ''}`}>
                     {otherIdeas.map(idea => (
                       <IdeaCard
                         key={idea.id}
