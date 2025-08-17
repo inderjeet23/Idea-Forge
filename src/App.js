@@ -11,20 +11,14 @@ const IdeaForgeContent = () => {
   const { currentStep, isAuthenticated, setCurrentStep } = useAppContext();
 
   useEffect(() => {
-    // Check if we're on the auth callback path
-    if (window.location.pathname === '/auth/callback') {
-      setCurrentStep('auth-callback');
-      return;
-    }
-
     // Only redirect to profile if user is not authenticated and not already on profile
-    if (!isAuthenticated && currentStep !== 'profile') {
+    if (!isAuthenticated && currentStep !== 'profile' && window.location.pathname !== '/auth/callback') {
       setCurrentStep('profile');
     }
   }, [isAuthenticated, currentStep, setCurrentStep]);
 
-  // Handle auth callback
-  if (currentStep === 'auth-callback') {
+  // Handle auth callback by checking URL directly
+  if (window.location.pathname === '/auth/callback') {
     return <AuthCallback />;
   }
 

@@ -1,38 +1,54 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { supabase } from '../supabaseClient';
 
 const AuthCallback = () => {
-  const { setCurrentStep } = useAppContext();
+  const { isAuthenticated } = useAppContext();
+  const [hasProcessed, setHasProcessed] = useState(false);
 
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        // Handle the OAuth callback
-        const { data, error } = await supabase.auth.getSession();
+        // Process the OAuth callback URL parameters
+        const { error } = await supabase.auth.getSession();
         
         if (error) {
           console.error('Error getting session:', error);
-          // Redirect to login page on error
-          setCurrentStep('profile');
+          // Wait a moment then redirect to allow error handling
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 1500);
           return;
         }
         
-        if (data.session) {
-          // User is authenticated, redirect to landing page
-          setCurrentStep('profile');
-        } else {
-          // No session found, redirect to login
-          setCurrentStep('profile');
-        }
+        // Mark as processed to prevent multiple attempts
+        setHasProcessed(true);
+        
+        // Wait for the auth state to propagate through the context
+        // The onAuthStateChange listener in AppContext will handle the session
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 2000);
+        
       } catch (error) {
         console.error('Auth callback error:', error);
-        setCurrentStep('profile');
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 1500);
       }
     };
 
-    handleAuthCallback();
-  }, [setCurrentStep]);
+    if (!hasProcessed) {
+      handleAuthCallback();
+    }
+  }, [hasProcessed]);
+
+  // If user becomes authenticated, redirect immediately
+  useEffect(() => {
+    if (isAuthenticated && hasProcessed) {
+      window.location.href = '/';
+    }
+  }, [isAuthenticated, hasProcessed]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center">
