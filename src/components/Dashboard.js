@@ -18,7 +18,9 @@ const Dashboard = () => {
           if (response.status === 404) {
             setSavedIdeas([]);
           } else {
-            throw new Error('Could not fetch saved ideas.');
+            const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+            console.error('Server error details:', errorData);
+            throw new Error(`Could not fetch saved ideas: ${errorData.details || errorData.error || 'Unknown error'}`);
           }
         } else {
           const data = await response.json();

@@ -442,7 +442,11 @@ export const AppProvider = ({ children }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ idea, userId: user.id })
       });
-      if (!response.ok) throw new Error('Failed to save idea to the database');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('Server error details:', errorData);
+        throw new Error(`Failed to save idea: ${errorData.details || errorData.error || 'Unknown error'}`);
+      }
       setSavedIdeas(prev => [...prev, { ...idea, savedAt: new Date().toISOString() }]);
     } catch (error) {
       console.error('Error saving idea:', error);
