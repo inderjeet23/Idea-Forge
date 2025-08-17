@@ -9,12 +9,13 @@ exports.handler = async (event) => {
   console.log('Received data:', { idea, userId });
   
   const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_ANON_KEY;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
 
   console.log('Environment check:', { 
     hasUrl: !!supabaseUrl, 
     hasKey: !!supabaseKey,
-    url: supabaseUrl ? `${supabaseUrl.substring(0, 20)}...` : 'missing'
+    url: supabaseUrl ? `${supabaseUrl.substring(0, 20)}...` : 'missing',
+    usingServiceRole: !!process.env.SUPABASE_SERVICE_ROLE_KEY
   });
 
   if (!supabaseUrl || !supabaseKey) {
