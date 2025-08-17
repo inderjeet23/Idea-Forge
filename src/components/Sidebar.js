@@ -10,8 +10,6 @@ import {
   Layout,
   User,
   LogOut,
-  Github,
-  Globe,
   Menu
 } from 'lucide-react';
 import LoginButton from './LoginButton';
@@ -69,25 +67,9 @@ const Sidebar = () => {
             className="w-full flex items-center justify-center px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm font-medium rounded-lg hover:from-purple-700 hover:to-blue-700 transition-colors shadow-sm"
           >
             <Plus size={18} className="mr-2" />
-            ➕ New Idea Journey
+            New Idea Journey
           </button>
 
-          {/* Additional links from original header */}
-          <div className="flex items-center space-x-4 text-xs text-gray-400 mt-3 pt-3 border-t border-gray-200">
-            <a 
-              href="https://github.com/yourusername/ideaforge" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="flex items-center hover:text-gray-600"
-            >
-              <Github size={12} className="mr-1" />
-              GitHub
-            </a>
-            <span className="flex items-center">
-              <Globe size={12} className="mr-1" />
-              Open Source
-            </span>
-          </div>
         </div>
 
         {/* Main Content (Scrollable List) - Saved Ideas */}

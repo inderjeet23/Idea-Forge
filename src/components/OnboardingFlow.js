@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Code, Heart, Target, Star, Lightbulb, Loader, AlertCircle, ChevronRight, ArrowLeft, Home, Send, MessageSquare } from 'lucide-react';
+import { Code, Heart, Target, Star, Lightbulb, Loader, AlertCircle, ChevronRight, ArrowLeft, Send, MessageSquare } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 
 const OnboardingFlow = () => {
@@ -20,8 +20,7 @@ const OnboardingFlow = () => {
     valueOptions,
     currentOnboardingStep,
     setCurrentOnboardingStep,
-    isAuthenticated,
-    setCurrentStep
+    sidebarOpen
   } = useAppContext();
 
   const nextStep = () => {
@@ -78,27 +77,18 @@ const OnboardingFlow = () => {
     <div className="w-full max-w-md mx-auto mb-4 sm:mb-3">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center">
-          <button
-            onClick={prevStep}
-            disabled={currentOnboardingStep === 1}
-            className="mr-2 p-1 text-gray-500 hover:text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-            aria-label="Go back"
-          >
-            <ArrowLeft size={16} />
-          </button>
+          {currentOnboardingStep > 1 && (
+            <button
+              onClick={prevStep}
+              className="mr-2 p-1 text-gray-500 hover:text-gray-700 transition-colors"
+              aria-label="Go back"
+            >
+              <ArrowLeft size={16} />
+            </button>
+          )}
           <span className="text-xs font-medium text-gray-500">Step {currentOnboardingStep} of 4</span>
         </div>
         <div className="flex items-center space-x-2">
-          {isAuthenticated && (
-            <button
-              onClick={() => setCurrentStep('dashboard')}
-              className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
-              aria-label="Go to Dashboard"
-              title="Go to Dashboard"
-            >
-              <Home size={16} />
-            </button>
-          )}
           <span className="text-xs text-gray-400">{Math.round((currentOnboardingStep / 4) * 100)}%</span>
         </div>
       </div>
@@ -402,7 +392,9 @@ const OnboardingFlow = () => {
   );
 
   const renderNavigation = () => (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-4 shadow-lg">
+    <div className={`fixed bottom-0 right-0 z-50 bg-white p-4 shadow-lg transition-all duration-300 ${
+      sidebarOpen ? 'left-80 lg:left-80' : 'left-0'
+    }`}>
       <div className="max-w-2xl mx-auto">
         {currentOnboardingStep < 4 ? (
           <button
