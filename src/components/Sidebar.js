@@ -1,13 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useAppContext } from '../context/AppContext';
 import { 
   Lightbulb, 
   Clock, 
   Star, 
-  ChevronLeft, 
-  ChevronRight, 
   Plus,
-  TrendingUp,
   X,
   History,
   Layout,
