@@ -1,3 +1,5 @@
+# netlify.toml
+
 [build]
   publish = "build"
   command = "npm run build"
@@ -13,3 +15,9 @@
   from = "/*"
   to = "/index.html"
   status = 200
+
+# Add this entire section below
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cross-Origin-Opener-Policy = "same-origin-allow-popups"
