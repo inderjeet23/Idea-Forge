@@ -11,24 +11,35 @@ const LoginButton = () => {
     setErrorMessage('');
     
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      console.log('Attempting to sign in with Google...');
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`
         }
       });
 
+      console.log('OAuth response:', { data, error });
+
       if (error) {
+        console.error('OAuth error:', error);
         throw new Error(error.message || 'Supabase authentication failed.');
       }
 
-      // OAuth flow will redirect the user, so we don't need to handle success here
+      if (data?.url) {
+        console.log('Redirecting to:', data.url);
+        // OAuth flow will redirect the user
+      } else {
+        console.warn('No redirect URL received from OAuth');
+        setAuthState('error');
+        setErrorMessage('OAuth configuration issue. Check console for details.');
+      }
       
     } catch (error) {
       console.error('Authentication Error:', error);
       setAuthState('error');
-      setErrorMessage('Authentication failed. Please try again.');
-      setTimeout(() => setAuthState('idle'), 3000);
+      setErrorMessage(`Authentication failed: ${error.message}`);
+      setTimeout(() => setAuthState('idle'), 5000);
     }
   };
 
