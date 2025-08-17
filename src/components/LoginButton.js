@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
-import { useAppContext } from '../context/AppContext';
 import { CheckCircle, XCircle, Loader } from 'lucide-react';
 
 const LoginButton = () => {
-  const { setCurrentStep } = useAppContext();
   const [authState, setAuthState] = useState('idle');
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -13,7 +11,7 @@ const LoginButton = () => {
     setErrorMessage('');
     
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`
