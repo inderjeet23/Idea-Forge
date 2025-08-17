@@ -598,6 +598,45 @@ export const AppProvider = ({ children }) => {
             budgetRange: "$50K-100K for MVP"
           }
         };
+      case 'competitorAnalysis':
+        return {
+          topCompetitors: [
+            {
+              name: "Similar Solution A",
+              url: "https://example-competitor.com",
+              swot: {
+                strength: "Established market presence and brand recognition",
+                weakness: "Outdated user interface and limited mobile support"
+              }
+            },
+            {
+              name: "Alternative Tool B", 
+              url: "https://alternative-tool.com",
+              swot: {
+                strength: "Comprehensive feature set and integrations",
+                weakness: "Complex pricing model and steep learning curve"
+              }
+            }
+          ],
+          aggregatedUserSentiment: {
+            commonComplaints: ["Slow customer support", "Confusing navigation", "Limited customization options"],
+            positiveKeywords: ["Reliable", "Feature-rich", "Good documentation"]
+          },
+          keyRisks: [
+            {
+              risk: "Market Saturation",
+              mitigation: "Focus on a specific niche or underserved segment with unique value proposition"
+            },
+            {
+              risk: "High Customer Acquisition Cost",
+              mitigation: "Develop strong content marketing strategy and leverage organic growth channels"
+            },
+            {
+              risk: "Technical Complexity",
+              mitigation: "Start with MVP to validate core assumptions before investing in complex features"
+            }
+          ]
+        };
       default:
         return {};
     }
@@ -626,9 +665,10 @@ export const AppProvider = ({ children }) => {
       setCurrentStep('validation');
       
       // Generate enhanced insights in background using Gemini (with fallbacks)
-      const [targetAudience, monetizationStrategy] = await Promise.all([
+      const [targetAudience, monetizationStrategy, competitorAnalysis] = await Promise.all([
         generateValidationInsights(idea, 'targetAudience'),
-        generateValidationInsights(idea, 'monetization')
+        generateValidationInsights(idea, 'monetization'),
+        generateValidationInsights(idea, 'competitorAnalysis')
       ]);
       
       // Combine all data
@@ -636,6 +676,7 @@ export const AppProvider = ({ children }) => {
         ...mockValidationData,
         targetAudience,
         monetizationStrategy,
+        competitorAnalysis,
         roadmapGenerated: false,
         loadingEnhancedInsights: false
       };

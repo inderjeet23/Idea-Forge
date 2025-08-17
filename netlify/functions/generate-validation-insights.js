@@ -36,6 +36,9 @@ exports.handler = async (event, context) => {
       case 'roadmap':
         prompt = constructRoadmapPrompt(idea);
         break;
+      case 'competitorAnalysis':
+        prompt = constructCompetitorAndRiskAnalysisPrompt(idea);
+        break;
       default:
         return {
           statusCode: 400,
@@ -148,6 +151,10 @@ Generate a realistic target audience persona with these details:
    - Who else is involved in purchase decisions
    - What factors influence their buying decisions
    - Typical budget range for tools like this
+   - Where they hang out online (specific subreddits, LinkedIn groups, forums, Slack communities)
+
+6. DAY IN THE LIFE:
+   - A brief narrative (2-3 sentences) of their typical workday, highlighting their key struggles and frustrations
 
 Return ONLY valid JSON in this exact format:
 {
@@ -181,8 +188,10 @@ Return ONLY valid JSON in this exact format:
     "discoveryChannels": ["string"],
     "decisionMakers": ["string"],
     "buyingFactors": ["string"],
-    "budgetRange": "string"
-  }
+    "budgetRange": "string",
+    "wateringHoles": ["string"]
+  },
+  "dayInTheLife": "string"
 }`;
 };
 
@@ -219,8 +228,9 @@ Generate a detailed monetization strategy with these components:
 
 5. FINANCIAL PROJECTIONS:
    - Estimated monthly recurring revenue (MRR) targets for Year 1
-   - Customer acquisition cost (CAC) estimates
-   - Lifetime value (LTV) estimates
+   - Industry-typical customer acquisition cost (CAC) with research-based ranges
+   - More detailed customer lifetime value (LTV) calculation methodology
+   - Realistic time to profitability assessment
 
 Return ONLY valid JSON in this exact format:
 {
@@ -250,9 +260,9 @@ Return ONLY valid JSON in this exact format:
   ],
   "projections": {
     "year1MRR": "string",
-    "estimatedCAC": "string",
-    "estimatedLTV": "string",
-    "breakEvenTimeframe": "string"
+    "industryAverageCAC": "string",
+    "customerLTV": "string",
+    "timeToProfitability": "string"
   }
 }`;
 };
@@ -336,5 +346,57 @@ Return ONLY valid JSON in this exact format:
     "keySkills": ["string"],
     "budgetRange": "string"
   }
+}`;
+};
+
+const constructCompetitorAndRiskAnalysisPrompt = (idea) => {
+  return `You are a startup strategist and market analyst. For the business idea "${idea.title}", provide a deep competitor and risk analysis.
+
+BUSINESS IDEA:
+Title: ${idea.title}
+Description: ${idea.description}
+Market: ${idea.market}
+Tags: ${idea.tags?.join(', ') || 'N/A'}
+
+Generate a comprehensive analysis with these components:
+
+1. TOP COMPETITORS:
+   - Identify 3-5 key competitors (direct and indirect)
+   - For each competitor, provide their URL and a SWOT analysis focusing on:
+     * One key strength they have
+     * One exploitable weakness you've identified
+
+2. USER SENTIMENT ANALYSIS:
+   - Research common complaints users have about existing solutions
+   - Identify what users consistently praise about current tools
+   - Focus on patterns that reveal market gaps
+
+3. KEY RISKS & MITIGATION:
+   - Identify 3-4 major risks this business idea faces
+   - For each risk, provide a specific, actionable mitigation strategy
+   - Consider market saturation, customer acquisition challenges, technical barriers, and competitive threats
+
+Return ONLY valid JSON in this exact format:
+{
+  "topCompetitors": [
+    {
+      "name": "string",
+      "url": "string", 
+      "swot": {
+        "strength": "string",
+        "weakness": "string"
+      }
+    }
+  ],
+  "aggregatedUserSentiment": {
+    "commonComplaints": ["string"],
+    "positiveKeywords": ["string"]
+  },
+  "keyRisks": [
+    {
+      "risk": "string",
+      "mitigation": "string"
+    }
+  ]
 }`;
 };
