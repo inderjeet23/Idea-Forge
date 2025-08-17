@@ -451,15 +451,183 @@ export const AppProvider = ({ children }) => {
     };
   };
 
+  const generateValidationInsights = async (idea, insightType) => {
+    try {
+      const response = await fetch('/.netlify/functions/generate-validation-insights', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ idea, insightType })
+      });
+
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error(`Error generating ${insightType}:`, error);
+      // Return fallback data based on insight type
+      return generateFallbackInsight(idea, insightType);
+    }
+  };
+
+  const generateFallbackInsight = (idea, insightType) => {
+    switch (insightType) {
+      case 'targetAudience':
+        return {
+          persona: {
+            name: "Alex Thompson",
+            jobTitle: "Product Manager",
+            ageRange: "28-35",
+            background: "Tech professional with 5+ years experience",
+            companySize: "50-200 employees",
+            techSkillLevel: "Intermediate"
+          },
+          demographics: {
+            industry: idea.tags?.[0] || "Technology",
+            experience: "3-7 years",
+            teamSize: "5-15 people",
+            budgetInfluence: "Recommends purchases up to $10K"
+          },
+          painPoints: [
+            {
+              problem: "Manual processes taking too much time",
+              currentSolution: "Spreadsheets and basic tools",
+              impact: "Reduces productivity by 20-30%"
+            }
+          ],
+          goals: {
+            primaryGoal: "Increase team efficiency and productivity",
+            successMetrics: ["Time saved", "Error reduction", "Team satisfaction"],
+            adoptionMotivators: ["Easy implementation", "Clear ROI", "Good support"]
+          },
+          buyingBehavior: {
+            discoveryChannels: ["Google search", "Peer recommendations", "LinkedIn"],
+            decisionMakers: ["Product Manager", "Engineering Lead"],
+            buyingFactors: ["Price", "Features", "Integration capabilities"],
+            budgetRange: "$50-500/month"
+          }
+        };
+      case 'monetization':
+        return {
+          primaryModel: {
+            type: "Subscription SaaS",
+            justification: "Predictable recurring revenue with ongoing value delivery"
+          },
+          pricingTiers: [
+            {
+              name: "Starter",
+              monthlyPrice: "$29",
+              features: ["Core features", "Email support", "Up to 5 users"],
+              targetSegment: "Small teams and startups"
+            },
+            {
+              name: "Professional",
+              monthlyPrice: "$99",
+              features: ["All Starter features", "Advanced analytics", "Priority support", "Up to 25 users"],
+              targetSegment: "Growing businesses"
+            },
+            {
+              name: "Enterprise",
+              monthlyPrice: "$299",
+              features: ["All Pro features", "Custom integrations", "Dedicated support", "Unlimited users"],
+              targetSegment: "Large organizations"
+            }
+          ],
+          pricingStrategy: {
+            valueMetric: "Number of users or projects managed",
+            psychology: "Anchor high-value tier to make middle tier attractive",
+            positioning: "Premium but accessible compared to enterprise solutions"
+          },
+          secondaryStreams: [
+            {
+              name: "Premium Integrations",
+              description: "Paid connectors to specialized tools",
+              revenueEstimate: "$5-15 per integration per month"
+            },
+            {
+              name: "Professional Services",
+              description: "Setup and training services",
+              revenueEstimate: "$500-2000 per project"
+            }
+          ],
+          projections: {
+            year1MRR: "$5,000-25,000",
+            estimatedCAC: "$150-300",
+            estimatedLTV: "$1,200-3,600",
+            breakEvenTimeframe: "6-12 months"
+          }
+        };
+      case 'roadmap':
+        return {
+          mvp: {
+            timeline: "3-4 months",
+            coreFeatures: ["User authentication", "Core workflow", "Basic dashboard", "Data export"],
+            techStack: {
+              frontend: "React with TypeScript",
+              backend: "Node.js with Express",
+              database: "PostgreSQL"
+            },
+            keyDecisions: ["API-first architecture", "Cloud deployment", "Responsive design"]
+          },
+          phase2: {
+            timeline: "2-3 months after MVP",
+            features: ["Advanced analytics", "Team collaboration", "API integrations"],
+            improvements: ["Performance optimization", "Enhanced UI/UX", "Mobile responsiveness"],
+            scalingNotes: "Implement caching and optimize database queries"
+          },
+          phase3: {
+            timeline: "4-6 months after Phase 2",
+            advancedFeatures: ["AI-powered insights", "Advanced reporting", "Workflow automation"],
+            integrations: ["Slack", "Microsoft Teams", "Zapier"],
+            enterpriseFeatures: ["SSO", "Advanced permissions", "Custom branding"]
+          },
+          technicalConsiderations: {
+            architecture: "Microservices with API gateway",
+            thirdPartyServices: ["Authentication service", "Email service", "Analytics platform"],
+            securityRequirements: ["Data encryption", "Regular security audits", "GDPR compliance"],
+            performanceGoals: ["< 2s page load time", "99.9% uptime", "Handle 1000+ concurrent users"]
+          },
+          resourceRequirements: {
+            mvpTeam: ["Full-stack developer", "UI/UX designer", "Product manager"],
+            developmentHours: "800-1200 hours",
+            keySkills: ["React", "Node.js", "PostgreSQL", "AWS/Azure"],
+            budgetRange: "$50K-100K for MVP"
+          }
+        };
+      default:
+        return {};
+    }
+  };
+
   const validateIdeaWithTrends = async (idea) => {
     setIsValidating(true);
     setSelectedIdea(idea);
     
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
+      // Generate basic validation data
       const mockValidationData = await generateRealisticTrendsData(idea);
-      setValidationData(mockValidationData);
+      
+      // Generate enhanced insights using Gemini (with fallbacks)
+      const [targetAudience, monetizationStrategy] = await Promise.all([
+        generateValidationInsights(idea, 'targetAudience'),
+        generateValidationInsights(idea, 'monetization')
+      ]);
+      
+      // Combine all data
+      const enhancedValidationData = {
+        ...mockValidationData,
+        targetAudience,
+        monetizationStrategy,
+        roadmapGenerated: false // Will be generated on-demand
+      };
+      
+      setValidationData(enhancedValidationData);
       setCurrentStep('validation');
     } catch (error) {
       console.error('Error validating idea:', error);
@@ -468,6 +636,27 @@ export const AppProvider = ({ children }) => {
       setCurrentStep('validation');
     } finally {
       setIsValidating(false);
+    }
+  };
+
+  const generateTechnicalRoadmap = async (idea) => {
+    try {
+      const roadmapData = await generateValidationInsights(idea, 'roadmap');
+      setValidationData(prev => ({
+        ...prev,
+        roadmap: roadmapData,
+        roadmapGenerated: true
+      }));
+      return roadmapData;
+    } catch (error) {
+      console.error('Error generating roadmap:', error);
+      const fallbackRoadmap = generateFallbackInsight(idea, 'roadmap');
+      setValidationData(prev => ({
+        ...prev,
+        roadmap: fallbackRoadmap,
+        roadmapGenerated: true
+      }));
+      return fallbackRoadmap;
     }
   };
 
@@ -556,6 +745,7 @@ export const AppProvider = ({ children }) => {
     generatePersonalizedIdeas,
     generateIdeasFromCustomPrompt,
     validateIdeaWithTrends,
+    generateTechnicalRoadmap,
     saveIdea,
     handleProfileChange,
     user,

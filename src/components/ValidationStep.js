@@ -1,5 +1,5 @@
-import React from 'react';
-import { TrendingUp, Users, CheckCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { TrendingUp, Users, CheckCircle, User, DollarSign, Code, Download, Loader } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 
 const ValidationStep = () => {
@@ -8,8 +8,138 @@ const ValidationStep = () => {
     validationData,
     setCurrentStep,
     saveIdea,
-    isAuthenticated
+    isAuthenticated,
+    generateTechnicalRoadmap
   } = useAppContext();
+
+  const [isGeneratingRoadmap, setIsGeneratingRoadmap] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleGenerateRoadmap = async () => {
+    setIsGeneratingRoadmap(true);
+    try {
+      await generateTechnicalRoadmap(selectedIdea);
+    } catch (error) {
+      console.error('Error generating roadmap:', error);
+    } finally {
+      setIsGeneratingRoadmap(false);
+    }
+  };
+
+  const handleExportReport = async () => {
+    setIsExporting(true);
+    try {
+      // Create validation report content
+      const reportContent = generateValidationReport();
+      
+      // Create blob and download
+      const blob = new Blob([reportContent], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${selectedIdea?.title?.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_validation_report.txt`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error exporting report:', error);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const generateValidationReport = () => {
+    const idea = selectedIdea;
+    const data = validationData;
+    
+    return `
+IDEA VALIDATION REPORT
+=====================
+
+Business Idea: ${idea?.title}
+Generated on: ${new Date().toLocaleDateString()}
+
+OVERVIEW
+--------
+${idea?.description}
+
+Market Size: ${idea?.market}
+Complexity: ${idea?.complexity}
+Time to Revenue: ${idea?.timeToRevenue}
+Match Score: ${idea?.matchScore}%
+
+TARGET AUDIENCE
+---------------
+Primary Persona: ${data?.targetAudience?.persona?.name} (${data?.targetAudience?.persona?.jobTitle})
+Age Range: ${data?.targetAudience?.persona?.ageRange}
+Company Size: ${data?.targetAudience?.persona?.companySize}
+Tech Skill Level: ${data?.targetAudience?.persona?.techSkillLevel}
+
+Key Pain Points:
+${data?.targetAudience?.painPoints?.map(pain => `- ${pain.problem} (Impact: ${pain.impact})`).join('\n') || 'N/A'}
+
+Budget Range: ${data?.targetAudience?.buyingBehavior?.budgetRange}
+Decision Makers: ${data?.targetAudience?.buyingBehavior?.decisionMakers?.join(', ')}
+
+MONETIZATION STRATEGY
+--------------------
+Business Model: ${data?.monetizationStrategy?.primaryModel?.type}
+Justification: ${data?.monetizationStrategy?.primaryModel?.justification}
+
+Pricing Tiers:
+${data?.monetizationStrategy?.pricingTiers?.map(tier => 
+  `- ${tier.name}: ${tier.monthlyPrice}/month (${tier.targetSegment})`
+).join('\n') || 'N/A'}
+
+Revenue Projections:
+- Year 1 MRR Target: ${data?.monetizationStrategy?.projections?.year1MRR}
+- Customer LTV: ${data?.monetizationStrategy?.projections?.estimatedLTV}
+- Break-even Timeframe: ${data?.monetizationStrategy?.projections?.breakEvenTimeframe}
+
+TECHNICAL ROADMAP
+-----------------
+${data?.roadmap ? `
+MVP Phase (${data.roadmap.mvp?.timeline}):
+${data.roadmap.mvp?.coreFeatures?.map(feature => `- ${feature}`).join('\n')}
+
+Tech Stack: ${data.roadmap.mvp?.techStack?.frontend}, ${data.roadmap.mvp?.techStack?.backend}, ${data.roadmap.mvp?.techStack?.database}
+
+Phase 2 (${data.roadmap.phase2?.timeline}):
+${data.roadmap.phase2?.features?.map(feature => `- ${feature}`).join('\n')}
+
+Phase 3 (${data.roadmap.phase3?.timeline}):
+${data.roadmap.phase3?.enterpriseFeatures?.map(feature => `- ${feature}`).join('\n')}
+
+Resource Requirements:
+- MVP Team: ${data.roadmap.resourceRequirements?.mvpTeam?.join(', ')}
+- Development Hours: ${data.roadmap.resourceRequirements?.developmentHours}
+- Budget Range: ${data.roadmap.resourceRequirements?.budgetRange}
+- Key Skills: ${data.roadmap.resourceRequirements?.keySkills?.join(', ')}
+` : 'Technical roadmap not yet generated. Click "Generate Technical Roadmap" to create detailed development plan.'}
+
+MARKET VALIDATION DATA
+----------------------
+${data?.competitorAnalysis ? `
+Competitor Analysis:
+- Direct Competitors: ${data.competitorAnalysis.directCompetitors}
+- Indirect Competitors: ${data.competitorAnalysis.indirectCompetitors}
+- Average Pricing: ${data.competitorAnalysis.averagePricing}
+
+Market Gaps:
+${data.competitorAnalysis.marketGaps?.map(gap => `- ${gap}`).join('\n')}
+
+Demand Signals:
+- Search Trend: ${data.demandSignals?.searchTrend}
+- Demand Score: ${data.demandSignals?.demandScore}/100
+- Geographic Distribution: ${data.demandSignals?.geoDistribution?.slice(0, 3).join(', ')}
+` : 'Market validation data not available.'}
+
+---
+Generated by IdeaForge - AI-powered SaaS idea discovery
+Report Date: ${new Date().toISOString()}
+    `.trim();
+  };
   return (
     <div className="max-w-6xl mx-auto">
       <div className="text-center mb-8">
@@ -142,6 +272,239 @@ const ValidationStep = () => {
             )}
           </div>
 
+          {/* Target Audience Section */}
+          {validationData?.targetAudience && (
+            <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+              <h3 className="font-semibold text-lg mb-4 flex items-center">
+                <User className="mr-2 text-blue-500" size={20} />
+                Target Audience
+              </h3>
+              
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="font-medium mb-3">Customer Persona</h4>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <div className="flex items-center mb-2">
+                      <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                        <User className="text-blue-600" size={20} />
+                      </div>
+                      <div>
+                        <h5 className="font-medium">{validationData.targetAudience.persona?.name}</h5>
+                        <p className="text-sm text-gray-600">{validationData.targetAudience.persona?.jobTitle}</p>
+                      </div>
+                    </div>
+                    <div className="text-sm text-gray-600 space-y-1">
+                      <p><strong>Age:</strong> {validationData.targetAudience.persona?.ageRange}</p>
+                      <p><strong>Company Size:</strong> {validationData.targetAudience.persona?.companySize}</p>
+                      <p><strong>Tech Level:</strong> {validationData.targetAudience.persona?.techSkillLevel}</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <h4 className="font-medium mb-3">Key Pain Points</h4>
+                  <div className="space-y-3">
+                    {validationData.targetAudience.painPoints?.slice(0, 3).map((pain, index) => (
+                      <div key={index} className="bg-red-50 p-3 rounded-lg border-l-4 border-red-200">
+                        <p className="font-medium text-sm text-red-800">{pain.problem}</p>
+                        <p className="text-xs text-red-600 mt-1">Impact: {pain.impact}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <div className="grid md:grid-cols-3 gap-4 text-sm">
+                  <div>
+                    <p className="font-medium text-gray-700">Budget Range</p>
+                    <p className="text-gray-600">{validationData.targetAudience.buyingBehavior?.budgetRange}</p>
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-700">Decision Makers</p>
+                    <p className="text-gray-600">{validationData.targetAudience.buyingBehavior?.decisionMakers?.join(', ')}</p>
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-700">Discovery Channels</p>
+                    <p className="text-gray-600">{validationData.targetAudience.buyingBehavior?.discoveryChannels?.slice(0, 2).join(', ')}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Monetization Strategy Section */}
+          {validationData?.monetizationStrategy && (
+            <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+              <h3 className="font-semibold text-lg mb-4 flex items-center">
+                <DollarSign className="mr-2 text-green-500" size={20} />
+                Monetization Strategy
+              </h3>
+              
+              <div className="mb-6">
+                <h4 className="font-medium mb-2">Business Model</h4>
+                <div className="bg-green-50 p-4 rounded-lg">
+                  <p className="font-medium text-green-800">{validationData.monetizationStrategy.primaryModel?.type}</p>
+                  <p className="text-sm text-green-600 mt-1">{validationData.monetizationStrategy.primaryModel?.justification}</p>
+                </div>
+              </div>
+              
+              <div className="mb-6">
+                <h4 className="font-medium mb-3">Pricing Tiers</h4>
+                <div className="grid md:grid-cols-3 gap-4">
+                  {validationData.monetizationStrategy.pricingTiers?.map((tier, index) => (
+                    <div key={index} className={`p-4 rounded-lg border-2 ${
+                      index === 1 ? 'border-blue-300 bg-blue-50' : 'border-gray-200 bg-white'
+                    }`}>
+                      <div className="text-center">
+                        <h5 className="font-medium">{tier.name}</h5>
+                        <p className="text-2xl font-bold text-blue-600 my-2">{tier.monthlyPrice}</p>
+                        <p className="text-xs text-gray-600 mb-3">{tier.targetSegment}</p>
+                      </div>
+                      <ul className="text-sm text-gray-600 space-y-1">
+                        {tier.features?.slice(0, 3).map((feature, featureIndex) => (
+                          <li key={featureIndex} className="flex items-center">
+                            <CheckCircle className="mr-2 text-green-500" size={12} />
+                            {feature}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="font-medium mb-3">Revenue Projections</h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Year 1 MRR Target:</span>
+                      <span className="font-medium">{validationData.monetizationStrategy.projections?.year1MRR}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Customer LTV:</span>
+                      <span className="font-medium">{validationData.monetizationStrategy.projections?.estimatedLTV}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Break-even:</span>
+                      <span className="font-medium">{validationData.monetizationStrategy.projections?.breakEvenTimeframe}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <h4 className="font-medium mb-3">Additional Revenue Streams</h4>
+                  <div className="space-y-2">
+                    {validationData.monetizationStrategy.secondaryStreams?.slice(0, 2).map((stream, index) => (
+                      <div key={index} className="bg-gray-50 p-3 rounded-lg">
+                        <p className="font-medium text-sm">{stream.name}</p>
+                        <p className="text-xs text-gray-600">{stream.description}</p>
+                        <p className="text-xs text-green-600 mt-1">{stream.revenueEstimate}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Technical Roadmap Section */}
+          {validationData?.roadmap && (
+            <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+              <h3 className="font-semibold text-lg mb-4 flex items-center">
+                <Code className="mr-2 text-purple-500" size={20} />
+                Technical Roadmap
+              </h3>
+              
+              <div className="grid md:grid-cols-3 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-medium text-purple-700 mb-2">MVP Phase</h4>
+                    <p className="text-sm text-gray-600 mb-3">Timeline: {validationData.roadmap.mvp?.timeline}</p>
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium text-gray-700">Core Features:</p>
+                      <ul className="text-xs text-gray-600 space-y-1">
+                        {validationData.roadmap.mvp?.coreFeatures?.slice(0, 4).map((feature, index) => (
+                          <li key={index} className="flex items-center">
+                            <div className="w-1.5 h-1.5 bg-purple-400 rounded-full mr-2"></div>
+                            {feature}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-purple-50 p-3 rounded-lg">
+                    <p className="text-xs font-medium text-purple-700">Tech Stack</p>
+                    <p className="text-xs text-purple-600 mt-1">
+                      {validationData.roadmap.mvp?.techStack?.frontend}, {validationData.roadmap.mvp?.techStack?.backend}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-medium text-blue-700 mb-2">Phase 2</h4>
+                    <p className="text-sm text-gray-600 mb-3">Timeline: {validationData.roadmap.phase2?.timeline}</p>
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium text-gray-700">New Features:</p>
+                      <ul className="text-xs text-gray-600 space-y-1">
+                        {validationData.roadmap.phase2?.features?.slice(0, 3).map((feature, index) => (
+                          <li key={index} className="flex items-center">
+                            <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-2"></div>
+                            {feature}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-medium text-green-700 mb-2">Phase 3</h4>
+                    <p className="text-sm text-gray-600 mb-3">Timeline: {validationData.roadmap.phase3?.timeline}</p>
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium text-gray-700">Enterprise Features:</p>
+                      <ul className="text-xs text-gray-600 space-y-1">
+                        {validationData.roadmap.phase3?.enterpriseFeatures?.slice(0, 3).map((feature, index) => (
+                          <li key={index} className="flex items-center">
+                            <div className="w-1.5 h-1.5 bg-green-400 rounded-full mr-2"></div>
+                            {feature}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-6 pt-4 border-t border-gray-200">
+                <div className="grid md:grid-cols-2 gap-6 text-sm">
+                  <div>
+                    <p className="font-medium text-gray-700 mb-2">Resource Requirements</p>
+                    <div className="space-y-1 text-gray-600">
+                      <p><strong>MVP Team:</strong> {validationData.roadmap.resourceRequirements?.mvpTeam?.join(', ')}</p>
+                      <p><strong>Development Hours:</strong> {validationData.roadmap.resourceRequirements?.developmentHours}</p>
+                      <p><strong>Budget Range:</strong> {validationData.roadmap.resourceRequirements?.budgetRange}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-700 mb-2">Key Skills Needed</p>
+                    <div className="flex flex-wrap gap-1">
+                      {validationData.roadmap.resourceRequirements?.keySkills?.map((skill, index) => (
+                        <span key={index} className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl p-6 border border-purple-200">
             <h3 className="font-semibold text-lg mb-2">Ready to Build?</h3>
             <p className="text-sm text-gray-600 mb-4">
@@ -149,11 +512,44 @@ const ValidationStep = () => {
             </p>
             
             <div className="space-y-2">
-              <button className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-2 rounded-lg font-medium hover:shadow-lg transition-all">
-                Generate Technical Roadmap
+              <button 
+                onClick={handleGenerateRoadmap}
+                disabled={isGeneratingRoadmap || validationData?.roadmapGenerated}
+                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-2 rounded-lg font-medium hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              >
+                {isGeneratingRoadmap ? (
+                  <>
+                    <Loader className="animate-spin mr-2" size={16} />
+                    Generating Roadmap...
+                  </>
+                ) : validationData?.roadmapGenerated ? (
+                  <>
+                    <CheckCircle className="mr-2" size={16} />
+                    Roadmap Generated
+                  </>
+                ) : (
+                  <>
+                    <Code className="mr-2" size={16} />
+                    Generate Technical Roadmap
+                  </>
+                )}
               </button>
-              <button className="w-full border border-gray-300 text-gray-700 py-2 rounded-lg font-medium hover:bg-gray-50 transition-all">
-                Export Validation Report
+              <button 
+                onClick={handleExportReport}
+                disabled={isExporting}
+                className="w-full border border-gray-300 text-gray-700 py-2 rounded-lg font-medium hover:bg-gray-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              >
+                {isExporting ? (
+                  <>
+                    <Loader className="animate-spin mr-2" size={16} />
+                    Exporting...
+                  </>
+                ) : (
+                  <>
+                    <Download className="mr-2" size={16} />
+                    Export Validation Report
+                  </>
+                )}
               </button>
             </div>
           </div>
