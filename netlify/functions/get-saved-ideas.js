@@ -50,6 +50,19 @@ exports.handler = async (event) => {
     };
   } catch (error) {
     console.error('Error fetching saved ideas:', error);
-    return { statusCode: 500, body: JSON.stringify({ error: 'Failed to fetch ideas.' }) };
+    console.error('Error details:', {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint
+    });
+    return { 
+      statusCode: 500, 
+      body: JSON.stringify({ 
+        error: 'Failed to fetch ideas.', 
+        details: error.message,
+        code: error.code 
+      }) 
+    };
   }
 };

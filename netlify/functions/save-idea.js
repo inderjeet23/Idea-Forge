@@ -6,14 +6,23 @@ exports.handler = async (event) => {
   }
 
   const { idea, userId } = JSON.parse(event.body);
+  console.log('Received data:', { idea, userId });
+  
   const supabaseUrl = process.env.SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_ANON_KEY;
+
+  console.log('Environment check:', { 
+    hasUrl: !!supabaseUrl, 
+    hasKey: !!supabaseKey,
+    url: supabaseUrl ? `${supabaseUrl.substring(0, 20)}...` : 'missing'
+  });
 
   if (!supabaseUrl || !supabaseKey) {
     return { statusCode: 500, body: JSON.stringify({ error: 'Server configuration error.' }) };
   }
 
   if (!idea || !userId) {
+    console.log('Missing required data:', { hasIdea: !!idea, hasUserId: !!userId });
     return { statusCode: 400, body: JSON.stringify({ error: 'Missing idea or userId.' }) };
   }
 
@@ -49,6 +58,19 @@ exports.handler = async (event) => {
     };
   } catch (error) {
     console.error('Error saving idea:', error);
-    return { statusCode: 500, body: JSON.stringify({ error: 'Failed to save idea.' }) };
+    console.error('Error details:', {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint
+    });
+    return { 
+      statusCode: 500, 
+      body: JSON.stringify({ 
+        error: 'Failed to save idea.', 
+        details: error.message,
+        code: error.code 
+      }) 
+    };
   }
 };
