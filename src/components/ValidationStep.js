@@ -276,12 +276,12 @@ Report Date: ${new Date().toISOString()}
                 <div>
                   <p className="text-sm text-gray-600 mb-2">Market Gaps Found:</p>
                   <ul className="space-y-1">
-                    {validationData.competitorAnalysis.marketGaps.map((gap, index) => (
+                    {validationData.competitorAnalysis.marketGaps?.map((gap, index) => (
                       <li key={index} className="text-sm text-green-700 flex items-start">
                         <CheckCircle className="mr-1 mt-0.5" size={12} />
                         {gap}
                       </li>
-                    ))}
+                    )) || <li className="text-sm text-gray-500">No market gaps data available</li>}
                   </ul>
                 </div>
               </div>
